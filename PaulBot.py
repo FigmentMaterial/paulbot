@@ -44,11 +44,14 @@ async def on_message(message):
     if message.author == client.user:
         return  #ignore messages that this generates
 
-    if message.content == '!test':
+    # Convert the message content to lowercase
+    content = message.content.lower()
+
+    if content == '!test':
        print("Test message received")
        await message.channel.send("Test command received!")
 
-    elif message.content.startswith('!addquote'):
+    elif content.startswith('!addquote'):
         print("Adding quote: ", message.content)
         quote = message.content[len('!addquote'):].strip()
         if quote:
@@ -57,7 +60,7 @@ async def on_message(message):
         else:
             await message.channel.send('Please provide a quote.')
 
-    elif message.content.startswith('!paul'):
+    elif startswith('!paul'):
         print("Sending random quote...")
         if quotes:
             random_quote = random.choice(quotes)
@@ -66,7 +69,7 @@ async def on_message(message):
             await message.channel.send('No quotes available.')
 
 
-    elif message.content == '!help':
+    elif content == '!help':
         # Define the list of available commands and their descriptions
         command_list = [
             ("!test", "Test command - displays a test message."),

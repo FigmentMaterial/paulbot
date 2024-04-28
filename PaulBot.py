@@ -60,7 +60,7 @@ async def on_message(message):
         else:
             await message.channel.send('Please provide a quote.')
 
-    elif startswith('!paul'):
+    elif content.startswith('!paul'):
         print("Sending random quote...")
         if quotes:
             random_quote = random.choice(quotes)

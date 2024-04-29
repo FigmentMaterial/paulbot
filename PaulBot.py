@@ -47,10 +47,12 @@ async def on_message(message):
     # Convert the message content to lowercase
     content = message.content.lower()
 
+    # Display a test message to make sure the bot and Discord are working together well
     if '!test' in content:
        print("Test message received")
        await message.channel.send("Test command received!")
-
+       
+    # Add quotes to the repository
     elif content.startswith('!addquote'):
         print("Adding quote: ", message.content)
         quote = message.content[len('!addquote'):].strip()
@@ -60,6 +62,7 @@ async def on_message(message):
         else:
             await message.channel.send('Please provide a quote.')
 
+    # Generate and sent a random quote to the Discord channel
     elif '!paul' in content:
         print("Sending random quote...")
         if quotes:
@@ -68,7 +71,7 @@ async def on_message(message):
         else:
             await message.channel.send('No quotes available.')
 
-
+    # Display a list of available commands to the end user in Discord
     elif '!help' in content:
         # Define the list of available commands and their descriptions
         command_list = [

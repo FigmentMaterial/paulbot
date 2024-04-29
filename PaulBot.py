@@ -53,7 +53,7 @@ async def on_message(message):
 
     elif '!addquote' in content:
         print("Adding quote: ", message.content)
-        quote = message.content[len('!addquote'):].strip()
+        quote = message.content.split('!addquote', 1)[1].strip()
         if quote:
             add_quote(quote)
             await message.channel.send('Quote added!')

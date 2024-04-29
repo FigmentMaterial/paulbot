@@ -33,6 +33,7 @@ def add_quote(quote):
 
 quotes = load_quotes()  # Load existing quotes from file
 
+# Trigger events based on commands types in Discord messages
 @client.event
 async def on_ready():
     print('Logged in as', client.user.name)

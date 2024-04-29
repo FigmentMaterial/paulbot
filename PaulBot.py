@@ -33,12 +33,13 @@ def add_quote(quote):
 
 quotes = load_quotes()  # Load existing quotes from file
 
-# Trigger events based on commands types in Discord messages
+# Trigger event once bot is connected to Discord to notify server that it is ready
 @client.event
 async def on_ready():
     print('Logged in as', client.user.name)
     print(client.user.name, ' is ready to receive commands!')
 
+# Trigger events based on commands types in Discord messages
 @client.event
 async def on_message(message):
         

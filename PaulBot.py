@@ -77,7 +77,7 @@ async def fetch_message_stats(channel):
             
         # Track reactions to quotes
         if message.content in quotes:
-            stats["quote_reactions"][str(message.id)] = {"content": message content, "reactions": message.reactions}
+            stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": message.reactions}
             
     save_stats (stats)
     print ("Finished fetching message stats.")

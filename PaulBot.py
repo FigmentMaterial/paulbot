@@ -2,7 +2,6 @@ from pickle import NONE
 import discord
 import random
 import json
-import datetime
 
 TOKEN = 'REMOVED_SECRET'
 
@@ -81,13 +80,12 @@ async def on_ready():
     print(client.user.name, ' is ready to receive commands!')
 
 # Fetch previous content for statistics
-async def fetch_message_stats(channel, last_processed_time):
-    after_time = None
-    
-    if last_processed_time is not None:
-        after_time = datetime.datetime.fromisoformat(last_processed_time)
+async def fetch_message_stats(channel):
+    if stats.get("fetch_completed", True):
+        await channel.send("Fetch already completed. Skipping fetch.")
+        return
         
-    async for message in channel.history(limit=None, after=after_time):   # Fetch all messages in the channel after the last fetch command
+    async for message in channel.history(limit=None):   # Fetch all messages in the channel after the last fetch command
         content = message.content.lower()
                
         # Track !paul command usage
@@ -110,6 +108,9 @@ async def fetch_message_stats(channel, last_processed_time):
                         else:
                             stats["quote_reactions"][quote] = {"content": quote, "reactions": reactions_count}
                         save_stats(stats)  # Save updated stats here
+    # Set the fetch_completed flag to True after processing
+    stats["fetch_completed"] = True
+    save_stats(stats)   # Save updated stats here
                 
 # Trigger events based on commands types in Discord messages
 @client.event

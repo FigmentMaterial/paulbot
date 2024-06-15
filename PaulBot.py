@@ -34,8 +34,8 @@ def load_stats():
     try:
         with open(stats_file, 'r') as file:
             return json.load(file)
-    except FileNotFoundError:
-        return {"paul_commands": {}, "quote_reaction": {}}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}   # Return an empty dictionary if file is missing or invalid
     
 # Save stats to file
 def save_stats (stats):

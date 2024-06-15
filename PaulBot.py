@@ -35,7 +35,12 @@ def load_stats():
         with open(stats_file, 'r') as file:
             return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
-        stats = {}
+        stats = {
+            "paul_commands": {},
+            "quote_reactions": {},
+            "most_reacted_quotes": {}
+        }
+        return stats
         
     # Initialize required keys if they don't exist
     if 'paul_commands' not in stats:

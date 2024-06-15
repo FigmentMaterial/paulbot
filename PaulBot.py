@@ -161,13 +161,13 @@ async def on_message(message):
             most_reactions = 0
             
         # Format the stats message
-        stats_message = (
-            f"**PaulBot Stats:**\n"
-            f"**Total Quotes:** {total_quotes}\n"
-            f"**Paul's biggest simp:** {top_user_mention} with {most_commands} calls to PaulBot\n"
-            # f"**Most popular quote:** {top_quote} with {most_reactions} reactions"
-        )
-        await message.channel.send(stats_message)
+        # Create an Embed instance    
+        embed = discord.Embed(title="PaulBot Statistics", color=0x7289DA)    
+        # Add fields for each statistic
+        embed.add_field(name="Total Quotes", value=total_quotes, inline=False)
+        embed.add_field(name="Paul's Biggest Simp", value=f"{top_user_mention} with {most_commands} calls to PaulBot", inline=False)
+        embed.add_field(name="Most Popular Quote", value=f"With {most_reactions}\n{top_quote}", inline=False)
+        await message.channel.send(embed)
 
     # Fetch message statistics retroactively
     elif '!fetch' in content:

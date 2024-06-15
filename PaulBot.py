@@ -15,7 +15,6 @@ client = discord.Client(intents=intents)
 
 quotes_file = 'quotes.json'  # File to store quotes
 stats_file = 'stats.json'   # File to store stats
-fetch_timestamp_file = 'fetch_timestamp.json'   # File to store time that last fetch was run
 
 # Load existing quotes from file
 def load_quotes():
@@ -39,31 +38,16 @@ def load_stats():
         stats = {
             "paul_commands": {},
             "quote_reactions": {},
-            "most_reacted_quotes": {}
         }
         # Initialize required keys if they don't exist
         stats.setdefault('paul_commands', {})
         stats.setdefault('quote_reactions', {})
-        stats.setdefault('most_reacted_quotes', {})
         return stats
     
 # Save stats to file
 def save_stats (stats):
     with open(stats_file, 'w') as file:
         json.dump(stats, file, indent=4)
-
-# Load timestamp since last fetch command from file
-def load_fetch_timestamp():
-    try:
-        with open(fetch_timestamp_file, 'r') as file:
-            return json.load(file)['timestamp']
-    except (FileNotFoundError, json.JSONDecodeError):
-        return None
-    
-# Save timestamp since last fetch to file
-def save_fetch_timestamp(timestamp):
-    with open (fetch_timestamp_file, 'w') as file:
-        json.dump({'timestamp': timestamp}, file)
 
 # Add a new quote
 def add_quote(quote):

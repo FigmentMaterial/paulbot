@@ -57,7 +57,7 @@ def load_fetch_timestamp():
     try:
         with open(fetch_timestamp_file, 'r') as file:
             return json.load(file)['timestamp']
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         return None
     
 # Save timestamp since last fetch to file

@@ -91,21 +91,24 @@ async def fetch_message_stats(channel, last_processed_time):
         content = message.content.lower()
                
         # Track !paul command usage
-        if message.author != client.user:
-            if '!paul' in content:
-                user_id = str(message.author.id)
-                stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
-                save_stats(stats)   # Save updated stats here
+        if message.author != client.user and '!paul' in content:
+            user_id = str(message.author.id)
+            stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
+            save_stats(stats)   # Save updated stats here
             continue    #Skip further processing for non-PaulBot messages
             
         # Track reactions to quotes
         if message.author == client.user:
             for quote in quotes:
-                if quote.lower() in message.content.lower():
+                if quote.lower() in content:
                     # Check if the message has reactions
                     reactions_count = len(message.reactions)
                     if reactions_count > 0:
-                        stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": len(message.reactions)}
+                        # Aggregate reactions for each occurrence of the quote
+                        if str(message.id) in stats["quote_reactions"]:
+                            stats["quote_reactions"][str(message.id)]["reactions"] += reactions_count
+                        else:
+                            stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": reactions_count}
                         save_stats(stats)  # Save updated stats here
             continue    #Skip further processing once the above statements have been checked
                 
@@ -142,11 +145,10 @@ async def on_message(message):
         user_id = str(message.author.id)
         stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
         save_stats(stats)   # Save updated stats here
+        
         if quotes:
             random_quote = random.choice(quotes)
             sent_message = await message.channel.send(random_quote)
-            stats["quote_reactions"][str(sent_message.id)] = {"content": random_quote, "reactions": 0}
-            save_stats(stats)   # Save updated stats here
         else:
             await message.channel.send('No quotes available.')
             
@@ -222,6 +224,18 @@ async def on_reaction_add(reaction, user):
     if message_id in stats["quote_reactions"]:
         stats["quote_reactions"][message_id]["reactions"] += 1
         save_stats(stats)   # Save stats here
+    else:
+        # Initialize with current reactions count
+        stats["quote_reactions"][message_id] = {
+            "content": reaction.message.content,
+            "reactions": len(reaction.message.reactions)
+            }
+        save_stats(stats)   # Save stats here
+    
+    # Check if reactions count dropped to zero and remove if so
+    if stats["quote_reactions"][message_id]["reactions"] == 0:
+        del stats["quote_reactions"][message_id]
+        save_stats(stats)   # Save stats here
         
 # Remove reaction statistics
 @client.event
@@ -234,5 +248,9 @@ async def on_reaction_remove(reaction, user):
         stats["quote_reactions"][message_id]["reactions"] -= 1
         save_stats (stats)  # Save stats here
     
+    # Check if reactions count dropped to zero and remove if so
+    if stats["quote_reactions"][message_id]["reactions"] == 0:
+        del stats["quote_reactions"][message_id]
+        save_stats(stats)   # Save stats here    
 
 client.run(TOKEN)

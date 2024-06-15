@@ -1,5 +1,87 @@
 {
-	"paul_commands": {},
-	"quote_reactions": {},
-	"most_reacted_quotes": {}
+    "paul_commands": {
+        "177902880714522624": 266,
+        "405099653357502466": 39,
+        "178020850061017088": 151,
+        "466034731784601610": 155,
+        "197947126133555200": 24,
+        "241811288332828672": 26,
+        "300378168970182657": 19,
+        "417117638569885696": 1
+    },
+    "quote_reactions": {
+        "1251412816943120438": {
+            "content": "I don't know man",
+            "reactions": 0
+        },
+        "1248644731521597471": {
+            "content": "Stop updating the bot and go camping you silly goose lol",
+            "reactions": 0
+        },
+        "1248644282584141904": {
+            "content": "https://tenor.com/view/wreck-it-ralph-thank-you-thanks-thanks-satan-when-friend-gives-advice-gif-3553888",
+            "reactions": 0
+        },
+        "1247395069502427136": {
+            "content": "Oh no , I passed out and just woke up from a nap",
+            "reactions": 0
+        },
+        "1238581466741604424": {
+            "content": "<:harold:1176680783709225010>",
+            "reactions": 0
+        },
+        "1238512180773785760": {
+            "content": "#facts",
+            "reactions": 0
+        },
+        "1237141974943793286": {
+            "content": "You taking advantage of a baked bread boy",
+            "reactions": 0
+        },
+        "1235256346975141889": {
+            "content": "My high ass though I was getting messages from myself  just now lol",
+            "reactions": 0
+        },
+        "1234492061281943702": {
+            "content": "Same",
+            "reactions": 0
+        },
+        "1234491652819648582": {
+            "content": "Don't go to work,  only craft",
+            "reactions": 0
+        },
+        "1234484657513566330": {
+            "content": "Damn right",
+            "reactions": 0
+        },
+        "1233843449980129361": {
+            "content": "when the fuck did i say that lol",
+            "reactions": 0
+        },
+        "1233814004506296390": {
+            "content": "Breakfast is not made yet, just woke up",
+            "reactions": 0
+        },
+        "1233422080859574384": {
+            "content": "I love you",
+            "reactions": 1
+        },
+        "1233252193075859538": {
+            "content": "It's nice to know that once I die. Paulbot will always be here to fill the spot",
+            "reactions": 0
+        },
+        "1232557004627640362": {
+            "content": "Doing the lords work",
+            "reactions": 0
+        },
+        "1232412390067540009": {
+            "content": "Increase the Paul size if you will",
+            "reactions": 0
+        },
+        "1232410348452319434": {
+            "content": "I got you fam",
+            "reactions": 0
+        }
+    },
+    "most_reacted_quotes": {}
 }

@@ -1,5 +1,16 @@
 {
-	"paul_commands": {},
-	"quote_reactions": {},
-	"most_reacted_quotes": {}
+    "paul_commands": {
+        "177902880714522624": 2
+    },
+    "quote_reactions": {
+        "1251570962717999235": {
+            "content": "What are you guys doing!? Why are you stalking me!? I will not be harassed! Also I gotta remember to paint the bottom of my door holy shit.",
+            "reactions": 0
+        },
+        "1251571156838776873": {
+            "content": "Okay, I can jump on in about an hour",
+            "reactions": 0
+        }
+    },
+    "most_reacted_quotes": {}
 }

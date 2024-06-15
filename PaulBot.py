@@ -65,7 +65,7 @@ async def fetch_message_stats(channel):
         content = message.content.lower()
         
         # Process quotes and populate any that were missed
-        if content.statswith('!addquote'):
+        if content.startswith('!addquote'):
             quote = message.content[len('!addquote'):].strip()
             if quote and quote not in quotes:
                 add_quote(quote)

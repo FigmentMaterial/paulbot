@@ -1,3 +1,4 @@
+from pickle import NONE
 import discord
 import random
 import json
@@ -81,7 +82,12 @@ async def on_ready():
 
 # Fetch previous content for statistics
 async def fetch_message_stats(channel, last_processed_time):
-    async for message in channel.history(limit=None, after=last_processed_time):   # Fetch all messages in the channel after the last fetch command
+    after_time = None
+    
+    if last_processed_time is not None:
+        after_time = datetime.datetime.fromisoformat(last_processed_time)
+        
+    async for message in channel.history(limit=None, after=after_time):   # Fetch all messages in the channel after the last fetch command
         if message.author == client.user:
             continue    # Ignore messages from PaulBot
         

@@ -149,18 +149,10 @@ async def on_message(message):
         if stats["paul_commands"]:
             top_user_id = max(stats["paul_commands"], key=stats["paul_commands"].get)
             top_user = await client.fetch_user(int(top_user_id))
-            guild = client.get_guild(446214795352342528)
-            member = guild.get_member(int(top_user_id))
-            if member:
-                top_user_displayname = member.display_name
-                top_user_tag = member.mention
-            else:
-                top_user_displayname = "Unknown"
-                top_user_tag = "N/A"
             most_commands = stats["paul_commands"][top_user_id]
+            top_user_mention = f"<@{top_user_id}>"  #format the mention
         else:
-            top_user_displayname = None
-            top_user_tag = "N/A"
+            top_user = None
             most_commands = 0
         # The quote that has had the most reactions in the channel
         if stats["quote_reactions"]:

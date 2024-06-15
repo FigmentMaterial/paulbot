@@ -84,12 +84,12 @@ async def fetch_message_stats(channel):
         if '!paul' in content:
             user_id = str(message.author.id)
             stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
+            save_stats(stats)   # Save updated stats here
             
         # Track reactions to quotes
         if message.content in quotes:
             stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": len(message.reactions)}
-            
-    save_stats (stats)
+            save_stats(stats)  # Save updated stats here
     print ("Finished fetching message stats.")
                 
 # Trigger events based on commands types in Discord messages
@@ -127,12 +127,12 @@ async def on_message(message):
         print("Sending random quote...")
         user_id = str(message.author.id)
         stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
-        save_stats(stats)
+        save_stats(stats)   # Save updated stats here
         if quotes:
             random_quote = random.choice(quotes)
             sent_message = await message.channel.send(random_quote)
             stats["quote_reactions"][str(sent_message.id)] = {"content": random_quote, "reactions": 0}
-            save_stats(stats)
+            save_stats(stats)   # Save updated stats here
         else:
             await message.channel.send('No quotes available.')
             
@@ -204,7 +204,7 @@ async def on_reaction_add(reaction, user):
     message_id = str(reaction.message.id)
     if message_id in stats["quote_reactions"]:
         stats["quote_reactions"][message_id]["reactions"] += 1
-        save_stats(stats)
+        save_stats(stats)   # Save stats here
         
 # Remove reaction statistics
 @client.event
@@ -215,7 +215,7 @@ async def on_reaction_remove(reaction, user):
     message_id = str(reaction.message.id)
     if message_id in stats["quote_reactions"]:
         stats["quote_reactions"][message_id]["reactions"] -= 1
-        save_stats (stats)
+        save_stats (stats)  # Save stats here
     
 
 client.run(TOKEN)

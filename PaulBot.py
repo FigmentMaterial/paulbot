@@ -167,7 +167,7 @@ async def on_message(message):
         stats_message = (
             f"**PaulBot Stats:**\n"
             f"**Total Quotes:** {total_quotes}\n"
-            f"**Paul's biggest simp:** {top_user} with {most_commands} calls to PaulBot\n"
+            f"**Paul's biggest simp:** {top_user_mention} with {most_commands} calls to PaulBot\n"
             f"**Most popular quote:** {top_quote} with {most_reactions} reactions"
         )
         await message.channel.send(stats_message)

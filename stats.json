@@ -1,5 +1,12 @@
 {
-    "paul_commands": {},
-    "quote_reactions": {},
+    "paul_commands": {
+        "177902880714522624": 1
+    },
+    "quote_reactions": {
+        "1251586550148497429": {
+            "content": "Great, even my news notifications now know my bread obsession",
+            "reactions": 0
+        }
+    },
     "most_reacted_quotes": {}
 }

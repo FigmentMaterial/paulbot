@@ -1,7 +1,7 @@
 import discord
 import random
 import json
-import os
+import datetime
 
 TOKEN = 'REMOVED_SECRET'
 
@@ -15,6 +15,7 @@ client = discord.Client(intents=intents)
 
 quotes_file = 'quotes.json'  # File to store quotes
 stats_file = 'stats.json'   # File to store stats
+fetch_timestamp_file = 'fetch_timestamp.json'   # File to store time that last fetch was run
 
 # Load existing quotes from file
 def load_quotes():
@@ -40,22 +41,29 @@ def load_stats():
             "quote_reactions": {},
             "most_reacted_quotes": {}
         }
+        # Initialize required keys if they don't exist
+        stats.setdefault('paul_commands', {})
+        stats.setdefault('quote_reactions', {})
+        stats.setdefault('most_reacted_quotes', {})
         return stats
-        
-    # Initialize required keys if they don't exist
-    if 'paul_commands' not in stats:
-        stats['paul_commands'] = {}
-    if 'quote_reactions' not in stats:
-        stats['quote_reactions'] = {}
-    if 'most_reacted_quotes' not in stats:
-        stats['most_reacted_quotes'] = {}
-        
-    return stats
     
 # Save stats to file
 def save_stats (stats):
     with open(stats_file, 'w') as file:
         json.dump(stats, file, indent=4)
+
+# Load timestamp since last fetch command from file
+def load_fetch_timestamp():
+    try:
+        with open(fetch_timestamp_file, 'r') as file:
+            return json.load(file)['timestamp']
+    except FileNotFoundError:
+        return None
+    
+# Save timestamp since last fetch to file
+def save_fetch_timestamp(timestamp):
+    with open (fetch_timestamp_file, 'w') as file:
+        json.dump({'timestamp': timestamp}, file)
 
 # Add a new quote
 def add_quote(quote):
@@ -72,8 +80,8 @@ async def on_ready():
     print(client.user.name, ' is ready to receive commands!')
 
 # Fetch previous content for statistics
-async def fetch_message_stats(channel):
-    async for message in channel.history(limit=None):   # Fetch all messages in the channel
+async def fetch_message_stats(channel, last_processed_time):
+    async for message in channel.history(limit=None, after=last_processed_time):   # Fetch all messages in the channel after the last fetch command
         if message.author == client.user:
             continue    # Ignore messages from PaulBot
         
@@ -95,7 +103,6 @@ async def fetch_message_stats(channel):
         if message.content in quotes:
             stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": len(message.reactions)}
             save_stats(stats)  # Save updated stats here
-    print ("Finished fetching message stats.")
                 
 # Trigger events based on commands types in Discord messages
 @client.event
@@ -106,10 +113,9 @@ async def on_message(message):
     print(f"Received message: '{message.id}'")
         
     if message.author == client.user:
-        print("Ignoring message from self!")
         return  #ignore messages that this generates
 
-    # Convert the message content to lowercase
+    # Convert the message content to lowercase for processing
     content = message.content.lower()
 
     # Display a test message to make sure the bot and Discord are working together well
@@ -119,7 +125,6 @@ async def on_message(message):
        
     # Add quotes to the repository
     elif content.startswith('!addquote'):
-        print("Adding quote: ", message.content)
         quote = message.content[len('!addquote'):].strip()
         if quote:
             add_quote(quote)
@@ -129,7 +134,6 @@ async def on_message(message):
 
     # Generate and sent a random quote to the Discord channel
     elif '!paul' in content:
-        print("Sending random quote...")
         user_id = str(message.author.id)
         stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
         save_stats(stats)   # Save updated stats here
@@ -142,7 +146,6 @@ async def on_message(message):
             await message.channel.send('No quotes available.')
             
     elif '!stats' in content:
-        print("Sending stats...")
         # How many quotes are currently in the quotes.json file
         total_quotes = len(quotes)
         # Who has sent !paul commands the most
@@ -154,6 +157,7 @@ async def on_message(message):
         else:
             top_user = None
             most_commands = 0
+            top_user_mention = "None"
         # The quote that has had the most reactions in the channel
         if stats["quote_reactions"]:
             top_quote_id = max(stats["quote_reactions"], key=lambda k: stats["quote_reactions"][k]["reactions"])
@@ -174,7 +178,9 @@ async def on_message(message):
 
     # Fetch message statistics retroactively
     elif '!fetch' in content:
-        await fetch_message_stats(message.channel)
+        last_processed_time = load_fetch_timestamp()
+        await fetch_message_stats(message.channel, last_processed_time)
+        save_fetch_timestamp(datetime.datetime.utcnow().isoformat())
         await message.channel.send('Fetched stats from message history.')
         
     # Display a list of available commands to the end user in Discord

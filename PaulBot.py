@@ -65,7 +65,7 @@ async def on_ready():
 
 # Fetch previous content for statistics
 async def fetch_message_stats(channel):
-    if stats.get("fetch_completed", True):
+    if stats.get("fetch_completed", False) == True:
         await channel.send("Fetch already completed. Skipping fetch.")
         return
         

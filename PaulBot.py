@@ -1,7 +1,6 @@
 import discord
 import random
 import json
-import os
 
 TOKEN = 'REMOVED_SECRET'
 
@@ -40,8 +39,8 @@ def load_stats():
     # Initialize required keys if they don't exist
     if 'paul_commands' not in stats:
         stats['paul_commands'] = {}
-    if 'quotes' not in stats:
-        stats['quotes'] = {}
+    if 'quote_reactions' not in stats:
+        stats['quote_reactions'] = {}
     if 'most_reacted_quotes' not in stats:
         stats['most_reacted_quotes'] = {}
         
@@ -87,7 +86,7 @@ async def fetch_message_stats(channel):
             
         # Track reactions to quotes
         if message.content in quotes:
-            stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": message.reactions}
+            stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": len(message.reactions)}
             
     save_stats (stats)
     print ("Finished fetching message stats.")
@@ -149,7 +148,7 @@ async def on_message(message):
             top_user = None
             most_commands = 0
         # The quote that has had the most reactions in the channel
-        if stats["quote_reaction"]:
+        if stats["quote_reactions"]:
             top_quote_id = max(stats["quote_reactions"], key=lambda k: stats["quote_reactions"][k]["reactions"])
             top_quote = stats["quote_reactions"][top_quote_id]["content"]
             most_reactions = stats["quote_reactions"][top_quote_id]["reactions"]
@@ -169,7 +168,7 @@ async def on_message(message):
     # Fetch message statistics retroactively
     elif '!fetch' in content:
         await fetch_message_stats(message.channel)
-        await message.channel.send('Fetch stats from message history.')
+        await message.channel.send('Fetched stats from message history.')
         
     # Display a list of available commands to the end user in Discord
     elif '!help' in content:
@@ -179,7 +178,8 @@ async def on_message(message):
             ("!addquote <quote>", "Add a quote to the list of quotes."),
             ("!paul", "Display a random quote from the list of quotes."),
             ("!stats", "Display statistics for PaulBot."),
-            ("!help", "Display this message.")
+            ("!help", "Display this message."),
+            ("!fetch", "Scan through messages to update stats.")
         ]
 
         # Format the list of commands

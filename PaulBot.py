@@ -102,13 +102,13 @@ async def fetch_message_stats(channel, last_processed_time):
             for quote in quotes:
                 if quote.lower() in content:
                     # Check if the message has reactions
-                    reactions_count = len(message.reactions)
+                    reactions_count = sum(reaction.count for reaction in message.reactions)
                     if reactions_count > 0:
                         # Aggregate reactions for each occurrence of the quote
-                        if str(message.id) in stats["quote_reactions"]:
-                            stats["quote_reactions"][str(message.id)]["reactions"] += reactions_count
+                        if quote in stats["quote_reactions"]:
+                            stats["quote_reactions"][quote]["reactions"] += reactions_count
                         else:
-                            stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": reactions_count}
+                            stats["quote_reactions"][quote] = {"content": quote, "reactions": reactions_count}
                         save_stats(stats)  # Save updated stats here
                 
 # Trigger events based on commands types in Discord messages
@@ -219,22 +219,18 @@ async def on_reaction_add(reaction, user):
     if user == client.user:
         return      # Ignore reactions that PaulBot generates
     
-    message_id = str(reaction.message.id)
-    if message_id in stats["quote_reactions"]:
-        stats["quote_reactions"][message_id]["reactions"] += 1
-        save_stats(stats)   # Save stats here
-    else:
-        # Initialize with current reactions count
-        stats["quote_reactions"][message_id] = {
-            "content": reaction.message.content,
-            "reactions": len(reaction.message.reactions)
-            }
-        save_stats(stats)   # Save stats here
+    message = reaction.message
+    content = message.content.lower()
     
-    # Check if reactions count dropped to zero and remove if so
-    if stats["quote_reactions"][message_id]["reactions"] == 0:
-        del stats["quote_reactions"][message_id]
-        save_stats(stats)   # Save stats here
+    if message.author == client.user:
+        for quote in quotes:
+            if quote.lower() in content:
+                if quote in stats["quote_reactions"]:
+                    stats["quote_reactions"][quote]["reactions"] += 1
+                else:
+                    stats["quote_reactions"][quote] = {"content": quote, "reactions": 1}
+                save_stats(stats) # Save stats here
+                break   # Stop checking quotes once a match is found
         
 # Remove reaction statistics
 @client.event
@@ -242,14 +238,17 @@ async def on_reaction_remove(reaction, user):
     if user == client.user:
         return      # Ignore reactions that PaulBot generates
     
-    message_id = str(reaction.message.id)
-    if message_id in stats["quote_reactions"]:
-        stats["quote_reactions"][message_id]["reactions"] -= 1
-        save_stats (stats)  # Save stats here
+    message = reaction.message
+    content = message.content.lower()
     
-    # Check if reactions count dropped to zero and remove if so
-    if stats["quote_reactions"][message_id]["reactions"] == 0:
-        del stats["quote_reactions"][message_id]
-        save_stats(stats)   # Save stats here    
+    if message.author == client.user:
+        for quote in quotes:
+            if quote.lower() in content:
+                if quote in stats["quote_reactions"] and stats["quote_reactions"][quote]["reactions"] > 0:
+                    stats["quote_reactions"][quote]["reactions"] -= 1
+                    if stats["quote_reactions"][quote]["reactions"] == 0:
+                        del stats["quote_reactions"][quote]
+                    save_stats(stats)   #Save stats here
+                break   # Stop checking quotes once a match is found
 
 client.run(TOKEN)

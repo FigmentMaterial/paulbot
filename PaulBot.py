@@ -95,6 +95,8 @@ async def fetch_message_stats(channel):
     # Set the fetch_completed flag to True after processing
     stats["fetch_completed"] = True
     save_stats(stats)   # Save updated stats here
+    # Post confirmation to channel
+    await channel.send('Fetched stats from message history.')
                 
 # Trigger events based on commands types in Discord messages
 @client.event
@@ -169,10 +171,7 @@ async def on_message(message):
 
     # Fetch message statistics retroactively
     elif '!fetch' in content:
-        last_processed_time = load_fetch_timestamp()
-        await fetch_message_stats(message.channel, last_processed_time)
-        save_fetch_timestamp(datetime.datetime.utcnow().isoformat())
-        await message.channel.send('Fetched stats from message history.')
+        await fetch_message_stats(message.channel)
         
     # Display a list of available commands to the end user in Discord
     elif '!help' in content:

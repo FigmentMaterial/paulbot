@@ -110,7 +110,6 @@ async def fetch_message_stats(channel, last_processed_time):
                         else:
                             stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": reactions_count}
                         save_stats(stats)  # Save updated stats here
-            continue    #Skip further processing once the above statements have been checked
                 
 # Trigger events based on commands types in Discord messages
 @client.event
@@ -179,7 +178,7 @@ async def on_message(message):
             f"**PaulBot Stats:**\n"
             f"**Total Quotes:** {total_quotes}\n"
             f"**Paul's biggest simp:** {top_user_mention} with {most_commands} calls to PaulBot\n"
-            f"**Most popular quote:** {top_quote} with {most_reactions} reactions"
+            # f"**Most popular quote:** {top_quote} with {most_reactions} reactions"
         )
         await message.channel.send(stats_message)
 

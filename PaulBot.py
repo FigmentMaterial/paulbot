@@ -130,7 +130,7 @@ async def on_message(message):
         save_stats(stats)
         if quotes:
             random_quote = random.choice(quotes)
-            await message.channel.send(random_quote)
+            sent_message = await message.channel.send(random_quote)
             stats["quote_reactions"][str(sent_message.id)] = {"content": random_quote, "reactions": 0}
             save_stats(stats)
         else:

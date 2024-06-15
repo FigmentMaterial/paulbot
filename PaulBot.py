@@ -100,10 +100,13 @@ async def fetch_message_stats(channel, last_processed_time):
             
         # Track reactions to quotes
         if message.author == client.user:
-            if message.content in quotes:
-                # Check if the message has reactions
-                stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": len(message.reactions)}
-                save_stats(stats)  # Save updated stats here
+            for quote in quotes:
+                if quote.lower() in message.content.lower():
+                    # Check if the message has reactions
+                    reactions_count = len(message.reactions)
+                    if reactions_count > 0:
+                        stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": len(message.reactions)}
+                        save_stats(stats)  # Save updated stats here
             continue    #Skip further processing once the above statements have been checked
                 
 # Trigger events based on commands types in Discord messages

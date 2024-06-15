@@ -1,12 +1,13 @@
 {
     "paul_commands": {
-        "177902880714522624": 160,
-        "405099653357502466": 20,
-        "466034731784601610": 67,
-        "178020850061017088": 105,
-        "197947126133555200": 22,
-        "241811288332828672": 13,
-        "300378168970182657": 7
+        "177902880714522624": 272,
+        "405099653357502466": 40,
+        "466034731784601610": 156,
+        "178020850061017088": 151,
+        "197947126133555200": 24,
+        "241811288332828672": 26,
+        "300378168970182657": 19,
+        "417117638569885696": 1
     },
     "quote_reactions": {
         "<:harold:1176680783709225010>": {
@@ -19,7 +20,7 @@
         },
         "You don't have any idea how HIGH I am right now!": {
             "content": "You don't have any idea how HIGH I am right now!",
-            "reactions": 3
+            "reactions": 5
         },
         "Nope I only like pleasure parts sorry": {
             "content": "Nope I only like pleasure parts sorry",
@@ -43,7 +44,7 @@
         },
         "Penis": {
             "content": "Penis",
-            "reactions": 2
+            "reactions": 3
         },
         "#facts": {
             "content": "#facts",
@@ -51,7 +52,7 @@
         },
         "WHAT": {
             "content": "WHAT",
-            "reactions": 6
+            "reactions": 17
         },
         "What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of my class in the Navy Seals, and I've been involved in numerous secret raids on Al-Quaeda, and I have over 300 confirmed kills. I am trained in gorilla warfare and I'm the top sniper in the entire US armed forces. You are nothing to me but just another target. I will wipe you the fuck out with precision the likes of which has never been seen before on this Earth, mark my fucking words. You think you can get away with saying that shit to me over the Internet? Think again, fucker. As we speak I am contacting my secret network of spies across the USA and your IP is being traced right now so you better prepare for the storm, maggot. The storm that wipes out the pathetic little thing you call your life. You're fucking dead, kid. I can be anywhere, anytime, and I can kill you in over seven hundred ways, and that's just with my bare hands. Not only am I extensively trained in unarmed combat, but I have access to the entire arsenal of the United States Marine Corps and I will use it to its full extent to wipe your miserable ass off the face of the continent, you little shit. If only you could have known what unholy retribution your little \"clever\" comment was about to bring down upon you, maybe you would have held your fucking tongue. But you couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will drown in it. You're fucking dead, kiddo.": {
             "content": "What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of my class in the Navy Seals, and I've been involved in numerous secret raids on Al-Quaeda, and I have over 300 confirmed kills. I am trained in gorilla warfare and I'm the top sniper in the entire US armed forces. You are nothing to me but just another target. I will wipe you the fuck out with precision the likes of which has never been seen before on this Earth, mark my fucking words. You think you can get away with saying that shit to me over the Internet? Think again, fucker. As we speak I am contacting my secret network of spies across the USA and your IP is being traced right now so you better prepare for the storm, maggot. The storm that wipes out the pathetic little thing you call your life. You're fucking dead, kid. I can be anywhere, anytime, and I can kill you in over seven hundred ways, and that's just with my bare hands. Not only am I extensively trained in unarmed combat, but I have access to the entire arsenal of the United States Marine Corps and I will use it to its full extent to wipe your miserable ass off the face of the continent, you little shit. If only you could have known what unholy retribution your little \"clever\" comment was about to bring down upon you, maybe you would have held your fucking tongue. But you couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will drown in it. You're fucking dead, kiddo.",
@@ -83,7 +84,7 @@
         },
         "what?": {
             "content": "what?",
-            "reactions": 1
+            "reactions": 5
         },
         "I have earth parents with flawed human religious beliefs.  I am a human man!": {
             "content": "I have earth parents with flawed human religious beliefs.  I am a human man!",
@@ -95,7 +96,7 @@
         },
         "What lol": {
             "content": "What lol",
-            "reactions": 1
+            "reactions": 3
         },
         "In before Okay see me tomorrow": {
             "content": "In before Okay see me tomorrow",
@@ -123,11 +124,84 @@
         },
         "My opinion on the subject holds little if any weight so you do you fam. Enjoy those cat bois .": {
             "content": "My opinion on the subject holds little if any weight so you do you fam. Enjoy those cat bois .",
-            "reactions": 1
+            "reactions": 3
         },
         "I believe it's more or a reason than an excuse": {
             "content": "I believe it's more or a reason than an excuse",
             "reactions": 3
+        },
+        "I would have trolled on the way out just to fan the flames a little": {
+            "content": "I would have trolled on the way out just to fan the flames a little",
+            "reactions": 1
+        },
+        "Why is it that straight men act more gay than gay men like 80% of the time \ud83d\ude05": {
+            "content": "Why is it that straight men act more gay than gay men like 80% of the time \ud83d\ude05",
+            "reactions": 2
+        },
+        "I had a stroke reading this": {
+            "content": "I had a stroke reading this",
+            "reactions": 1
+        },
+        "Jesus christ. Gotta flag that as NSFW": {
+            "content": "Jesus christ. Gotta flag that as NSFW",
+            "reactions": 2
+        },
+        "Jesus Christ": {
+            "content": "Jesus Christ",
+            "reactions": 2
+        },
+        "Why ?": {
+            "content": "Why ?",
+            "reactions": 1
+        },
+        "It don't fucking flush!!": {
+            "content": "It don't fucking flush!!",
+            "reactions": 2
+        },
+        "What's wrong with sexy robots.": {
+            "content": "What's wrong with sexy robots.",
+            "reactions": 1
+        },
+        "I know you are excited to go see Becky the Bile Titan": {
+            "content": "I know you are excited to go see Becky the Bile Titan",
+            "reactions": 2
+        },
+        "First of all. I use a kitchen aid mixer. Secondly I have been cooking and cleaning my ass off. Homies tired": {
+            "content": "First of all. I use a kitchen aid mixer. Secondly I have been cooking and cleaning my ass off. Homies tired",
+            "reactions": 1
+        },
+        "That sounds kind of kinky and I approve": {
+            "content": "That sounds kind of kinky and I approve",
+            "reactions": 1
+        },
+        "It's okay John . Don't be afraid,  I will let you power bottom.": {
+            "content": "It's okay John . Don't be afraid,  I will let you power bottom.",
+            "reactions": 1
+        },
+        "I just woke up from weed coma , what in the incel bullshit am I reading right now": {
+            "content": "I just woke up from weed coma , what in the incel bullshit am I reading right now",
+            "reactions": 2
+        },
+        "What's the point. Bots are gone. Happiness is dead": {
+            "content": "What's the point. Bots are gone. Happiness is dead",
+            "reactions": 1
+        },
+        "I can after I make bread": {
+            "content": "I can after I make bread",
+            "reactions": 3
+        },
+        "You didn't account for my time diation field": {
+            "content": "You didn't account for my time diation field",
+            "reactions": 1
+        },
+        "Just finished \ud83d\udca6": {
+            "content": "Just finished \ud83d\udca6",
+            "reactions": 3
+        },
+        "Thanks for the stroke": {
+            "content": "Thanks for the stroke",
+            "reactions": 1
         }
-    }
+    },
+    "fetch_completed": true
 }

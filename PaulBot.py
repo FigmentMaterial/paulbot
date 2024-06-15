@@ -88,27 +88,23 @@ async def fetch_message_stats(channel, last_processed_time):
         after_time = datetime.datetime.fromisoformat(last_processed_time)
         
     async for message in channel.history(limit=None, after=after_time):   # Fetch all messages in the channel after the last fetch command
-        if message.author == client.user:
-            continue    # Ignore messages from PaulBot
-        
         content = message.content.lower()
-        
-        # Process quotes and populate any that were missed
-        if content.startswith('!addquote'):
-            quote = message.content[len('!addquote'):].strip()
-            if quote and quote not in quotes:
-                add_quote(quote)
-        
+               
         # Track !paul command usage
-        if '!paul' in content:
-            user_id = str(message.author.id)
-            stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
-            save_stats(stats)   # Save updated stats here
+        if message.author != client.user:
+            if '!paul' in content:
+                user_id = str(message.author.id)
+                stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
+                save_stats(stats)   # Save updated stats here
+            continue    #Skip further processing for non-PaulBot messages
             
         # Track reactions to quotes
-        if message.content in quotes:
-            stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": len(message.reactions)}
-            save_stats(stats)  # Save updated stats here
+        if message.author == client.user:
+            if message.content in quotes:
+                # Check if the message has reactions
+                stats["quote_reactions"][str(message.id)] = {"content": message.content, "reactions": len(message.reactions)}
+                save_stats(stats)  # Save updated stats here
+            continue    #Skip further processing once the above statements have been checked
                 
 # Trigger events based on commands types in Discord messages
 @client.event

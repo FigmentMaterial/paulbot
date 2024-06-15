@@ -165,11 +165,11 @@ async def on_message(message):
         embed = discord.Embed(title="PaulBot Statistics", color=0x7289DA)    
         # Add fields for each statistic
         embed.add_field(name="Total Quotes", value=total_quotes, inline=False)
-        embed.add_field(name="-------------", value="\u200b", inline=False)  # This adds a clear divider
+        embed.add_field(name="-------------", value="", inline=False)  # This adds a clear divider
         embed.add_field(name="Paul's Biggest Simp", value=f"{top_user_mention} with {most_commands} calls to PaulBot", inline=False)
-        embed.add_field(name="-------------", value="\u200b", inline=False)  # This adds a clear divider
+        embed.add_field(name="-------------", value="", inline=False)  # This adds a clear divider
         embed.add_field(name="Most Popular Quote", value=f"With {most_reactions} Reactions:\n{top_quote}", inline=False)
-        embed.add_field(name="-------------", value="\u200b", inline=False)  # This adds a clear divider
+        embed.add_field(name="-------------", value="", inline=False)  # This adds a clear divider
         embed.set_footer(text="Stats provided by PaulBot, about PaulBot, for you. He's a filthy self-reporter.")
         await message.channel.send(embed=embed)
 

@@ -167,6 +167,7 @@ async def on_message(message):
         embed.add_field(name="Total Quotes", value=total_quotes, inline=False)
         embed.add_field(name="Paul's Biggest Simp", value=f"{top_user_mention} with {most_commands} calls to PaulBot", inline=False)
         embed.add_field(name="Most Popular Quote", value=f"With {most_reactions} Reactions:\n{top_quote}", inline=False)
+        embed.set_footer(text="Stats provided by PaulBot, about PaulBot, for you. He's a filthy self-reporter.")
         await message.channel.send(embed=embed)
 
     # Fetch message statistics retroactively

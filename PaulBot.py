@@ -193,7 +193,7 @@ async def on_reaction_add(reaction, user):
     message_id = str(reaction.message.id)
     if message_id in stats["quote_reactions"]:
         stats["quote_reactions"][message_id]["reactions"] += 1
-        save-stats(stats)
+        save_stats(stats)
         
 # Remove reaction statistics
 @client.event

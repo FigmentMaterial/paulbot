@@ -59,14 +59,19 @@ def load_quotes():
     except json.JSONDecodeError as e:
         logging.error(f"JSONDecodeError: Failed to decode JSON in '{quotes_file}'. Error: {e}. Validate that file is not empty and is formatted in JSON.")
         return []
+    except Exception as e:
+        logging.error(f"Unexpected error loading quotes from '{quotes_file}'. Error: {e}.")
+        return []
 
 # Save quotes to file
 def save_quotes(quotes):
     try:
         with open(quotes_file, 'w') as file:
             json.dump(quotes, file, indent=4)
+    except OSError as e:
+        logging.error(f"OSError: Failed to save quotes to '{quotes_file}'. Error: {e}.")
     except Exception as e:
-        logging.error(f"Failed to save quotes to '{quotes_file}'. Error: {e}")
+        logging.error(f"Unexcepted error saving quotes to '{quotes_file}'. Error: {e}.")
         
 # Load existing stats from file
 def load_stats():
@@ -79,21 +84,27 @@ def load_stats():
     except json.JSONDecodeError as e:
         logging.warning(f"JSONDecodeError: Failed to decode JSON in '{stats_file}'. Error: {e}. Validate that the file is not empty and is formatted in JSON.")
         return {"paul_commands": {}, "quote_reactions": {}}
-        # Initialize required keys if they don't exist
+    except Exception as e:
+        logging.error(f"Unexpected error loading stats from '{stats_file}'. Error: {e}.")
+        return {"paul_commands": {}, "quote_reactions": {}}
     
 # Save stats to file
 def save_stats (stats):
     try:
         with open(stats_file, 'w') as file:
             json.dump(stats, file, indent=4)
+    except OSError as e:
+        logging.error(f"OSError: Failed to save stats to '{stats_file}'. Error: {e}.")
     except Exception as e:
-        logging.error(f"Failed to save stats to '{stats_file}'. Error: {e}")
+        logging.error(f"Failed to save stats to '{stats_file}'. Error: {e}.")
 
 # Add a new quote
 def add_quote(quote):
     try:
         quotes.append(quote)
         save_quotes(quotes)
+    except AttributeError as e:
+        logging.error(f"AttributeError: Failed to add quote. Error: {e}.")
     except Exception as e:
         logging.error(f"Failed to add quote to '{quotes_file}'. Error: {e}")
 
@@ -141,8 +152,12 @@ async def fetch_message_stats(channel):
         save_stats(stats)   # Save updated stats here
         # Post confirmation to channel
         await channel.send('Fetched stats from message history.')
+    except discord.HTTPException as e:
+        logging.error(f"HTTPException: Error fetching message stats. Error: {e}.")
+    except discord.Forbidden as e:
+        logging.error(f"Forbidden: Insufficient permissions to fetch message stats. Error: {e}.")
     except Exception as e:
-        logging.error(f"Error fetching message stats. Error: {e}")
+        logging.error(f"Unexcepted error fetching message stats. Error: {e}.")
                 
 # Trigger events based on commands types in Discord messages
 @client.event
@@ -244,8 +259,12 @@ async def on_message(message):
 
             # Send the help message to the channel
             await message.channel.send(help_message)
+    except discord.HTTPException as e:
+        logging.error(f"HTTPException: Error processing Discord command. Error: {e}.")
+    except discord.Forbidden as e:
+        logging.error(f"Forbidden: Insufficient premissions to process Discord command. Error: {e}.")
     except Exception as e:
-        logging.error(f"Error processing Discord command. Error: {e}")
+        logging.error(f"Unexpected error processing Discord command. Error: {e}.")
 
 # Collect reaction statistics
 @client.event
@@ -266,8 +285,12 @@ async def on_reaction_add(reaction, user):
                         stats["quote_reactions"][quote] = {"content": quote, "reactions": 1}
                     save_stats(stats) # Save stats here
                     break   # Stop checking quotes once a match is found
+    except discord.HTTPException as e:
+        logging.error(f"HTTPException: Error processing reaction add. Error: {e}.")
+    except discord.Forbidden as e:
+        logging.error(f"Forbidden: Insufficient premissions to process reaction add from Discord. Error: {e}.")
     except Exception as e:
-        logging.error(f"Error processing reaction add: {e}")
+        logging.error(f"Unexpected error processing reaction add: {e}.")
         
 # Remove reaction statistics
 @client.event
@@ -288,11 +311,26 @@ async def on_reaction_remove(reaction, user):
                             del stats["quote_reactions"][quote]
                         save_stats(stats)   #Save stats here
                     break   # Stop checking quotes once a match is found
+    except discord.HTTPException as e:
+        logging.error(f"HTTPException: Error processing reaction remove. Error: {e}.")
+    except discord.Forbidden as e:
+        logging.error(f"Forbidden: Insufficient premissions to process reaction remove from Discord. Error: {e}.")
     except Exception as e:
-        logging.error(f"Error processing reaction remove: {e}")
+        logging.error(f"Unexpected error processing reaction remove: {e}.")
 
 # Run the Discord bot with the loaded token
-try:        
-    client.run(TOKEN)
-except Exception as e:
-    logging.error(f"Failed to run the Discord bot. Error: {e}")
+if __name__ == "__main__":        
+    try:        
+        client.run(TOKEN)
+    except discord.LoginFailure as e:
+        logging.error(f"LoginFailure: Invalid Discord token provided. Error: {e}.")
+    except discord.PrivilegedIntentsRequired as e:
+        logging.error(f"PrivilegedIntentsRequired: Missing required privileged intents. Enable them in the Discord Developer Portal. Error: {e}.")
+    except discord.HTTPException as e:
+        logging.error(f"HTTPException: HTTP request to Discord API failed. Error: {e}.")
+    except discord.GatewayNotFound as e:
+        logging.error(f"GatewayNotFound: Discord gateway was not found. Error: {e}.")
+    except discord.ConnectionClosed as e:
+        logging.error(f"ConnectionClosed: Connection to Discord closed unexpectedly. Error code: {e.code}. Error: {e}.")
+    except Exception as e:
+        logging.error(f"Unexpected error during bot run. Error: {e}.")

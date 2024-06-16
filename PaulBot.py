@@ -2,8 +2,12 @@ from pickle import NONE
 import discord
 import random
 import json
+from dotenv import load_dotenv
+import os
 
-TOKEN = 'REMOVED_SECRET'
+# Load environment variables for Discord token
+load_dotenv()
+TOKEN = os.getenv('DISCORD_TOKEN')
 
 # Define your intents (Discord security)
 intents = discord.Intents.none()

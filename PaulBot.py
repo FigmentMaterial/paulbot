@@ -9,6 +9,10 @@ import os
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
+# Check if the token is loaded correctly
+if TOKEN is None:
+    raise ValueError("No token found. Please set the DISCORD_TOKEN environment variable.")
+
 # Define your intents (Discord security)
 intents = discord.Intents.none()
 intents.messages = True  # Enable message events

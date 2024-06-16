@@ -3,6 +3,27 @@ import random
 import json
 from dotenv import load_dotenv
 import os
+import logging
+from logging.handlers import RotatingFileHandler
+
+# Setup a logging function to process error handling throughout the script
+def setup_logging():
+    # Configure logging to a file
+    logging.basicConfig(
+       filename='paulbot.log',
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        level=logging.INFO
+    )
+
+    # Configure a rotating file handler to keep logs from growing too large
+    handler = RotatingFileHandler('paulbot.log', maxBytes=1024*1024, backupCount=5)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logging.getLogger('').addHandler(handler)
+
+# Initialize logging
+setup_logging()    
 
 # Load environment variables for Discord token
 load_dotenv()

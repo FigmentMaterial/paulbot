@@ -6,6 +6,9 @@
 # Environment variables for security
 *.env
 
+# Log files
+*.log
+
 # User-specific files
 *.rsuser
 *.suo

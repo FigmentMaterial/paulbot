@@ -6,7 +6,7 @@ import json
 TOKEN = 'REMOVED_SECRET'
 
 # Define your intents (Discord security)
-intents = discord.Intents.default()
+intents = discord.Intents.none()
 intents.messages = True  # Enable message events
 intents.message_content = True  # Enable message content
 intents.reactions = True # Enable reaction events

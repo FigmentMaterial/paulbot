@@ -1,9 +1,6 @@
-from ast import Try
-from symbol import try_stmt
 import discord
 import random
 import json
-from discord.enums import try_enum
 from dotenv import load_dotenv
 import os
 import logging
@@ -71,22 +68,22 @@ def save_quotes(quotes):
     except OSError as e:
         logging.error(f"OSError: Failed to save quotes to '{quotes_file}'. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexcepted error saving quotes to '{quotes_file}'. Error: {e}.")
+        logging.error(f"Unexpected error saving quotes to '{quotes_file}'. Error: {e}.")
         
 # Load existing stats from file
 def load_stats():
+    default_stats = {"paul_commands": {}, "quote_reactions": {}}
     try:
         with open(stats_file, 'r') as file:
             return json.load(file)
     except FileNotFoundError:
         logging.warning(f"FileNotFoundError: Stats file '{stats_file}' not found.")
-        return {"paul_commands": {}, "quote_reactions": {}}
     except json.JSONDecodeError as e:
         logging.warning(f"JSONDecodeError: Failed to decode JSON in '{stats_file}'. Error: {e}. Validate that the file is not empty and is formatted in JSON.")
-        return {"paul_commands": {}, "quote_reactions": {}}
     except Exception as e:
         logging.error(f"Unexpected error loading stats from '{stats_file}'. Error: {e}.")
-        return {"paul_commands": {}, "quote_reactions": {}}
+    # Return the default stats if any exception occurred.
+    return default_stats    
     
 # Save stats to file
 def save_stats (stats):
@@ -96,7 +93,7 @@ def save_stats (stats):
     except OSError as e:
         logging.error(f"OSError: Failed to save stats to '{stats_file}'. Error: {e}.")
     except Exception as e:
-        logging.error(f"Failed to save stats to '{stats_file}'. Error: {e}.")
+        logging.error(f"Unexpected error saving stats to '{stats_file}'. Error: {e}.")
 
 # Add a new quote
 def add_quote(quote):
@@ -104,9 +101,9 @@ def add_quote(quote):
         quotes.append(quote)
         save_quotes(quotes)
     except AttributeError as e:
-        logging.error(f"AttributeError: Failed to add quote. Error: {e}.")
+        logging.error(f"AttributeError: Failed to add quote to '{quotes_file}'. Error: {e}.")
     except Exception as e:
-        logging.error(f"Failed to add quote to '{quotes_file}'. Error: {e}")
+        logging.error(f"Unexpected error adding quote to '{quotes_file}'. Error: {e}")
 
 quotes = load_quotes()  # Load existing quotes from file
 stats = load_stats()    # Load existing stats from file
@@ -130,40 +127,61 @@ async def fetch_message_stats(channel):
             # Track !paul command usage
             if message.author != client.user and '!paul' in content:
                 user_id = str(message.author.id)
-                stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
-                save_stats(stats)   # Save updated stats here
+                try:
+                    stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
+                    save_stats(stats)   # Save updated stats here
+                except KeyError as e:
+                    logging.error(f"KeyError updating paul_commands for user: {user_id} during !fetch process. Error: {e}")
+                except OSError as e:
+                    logging.error(f"OSError saving stats while tracking !paul usage during !fetch process. Error: {e}")
+                except Exception as e:
+                    logging.error(f"Unexpected error while tracking !paul usage during !fetch process. Error: {e}")
                 continue    #Skip further processing for non-PaulBot messages
             
             # Track reactions to quotes
             if message.author == client.user:
                 for quote in quotes:
                     if quote.lower() in content:
-                        # Check if the message has reactions
-                        reactions_count = sum(reaction.count for reaction in message.reactions)
-                        if reactions_count > 0:
-                            # Aggregate reactions for each occurrence of the quote
-                            if quote in stats["quote_reactions"]:
-                                stats["quote_reactions"][quote]["reactions"] += reactions_count
-                            else:
-                                stats["quote_reactions"][quote] = {"content": quote, "reactions": reactions_count}
-                            save_stats(stats)  # Save updated stats here
+                        try:    
+                            # Check if the message has reactions
+                            reactions_count = sum(reaction.count for reaction in message.reactions)
+                            if reactions_count > 0:
+                                # Aggregate reactions for each occurrence of the quote
+                                if quote in stats["quote_reactions"]:
+                                    stats["quote_reactions"][quote]["reactions"] += reactions_count
+                                else:
+                                    stats["quote_reactions"][quote] = {"content": quote, "reactions": reactions_count}
+                                save_stats(stats)  # Save updated stats here
+                        except KeyError as e:
+                            logging.error(f"KeyError updating quote_reactions for quote: {quote} during !fetch process. Error: {e}")
+                        except OSError as e:
+                            logging.error(f"OSError saving stats while tracking reactions during !fetch process. Error: {e}")
+                        except Exception as e:
+                            logging.error(f"Unexpected error while tracking reactions during !fetch process. Error: {e}")
+        
         # Set the fetch_completed flag to True after processing
         stats["fetch_completed"] = True
         save_stats(stats)   # Save updated stats here
+        
         # Post confirmation to channel
         await channel.send('Fetched stats from message history.')
+        
     except discord.HTTPException as e:
-        logging.error(f"HTTPException: Error fetching message stats. Error: {e}.")
+        logging.error(f"HTTPException: Error fetching message stats for channel {channel.id}. Error: {e}.")
     except discord.Forbidden as e:
-        logging.error(f"Forbidden: Insufficient permissions to fetch message stats. Error: {e}.")
+        logging.error(f"Forbidden: Insufficient permissions to fetch message stats for channel {channel.id}. Error: {e}.")
+    except discord.NotFound as e:
+        logging.error(f"NotFound: Resource not found while fetching message stats for channel {channel.id}. Error: {e}.")
+    except discord.InvalidArgument as e:
+        logging.error(f"InvalidArgument: Invalid argument encountered while fetching message stats for channel {channel.id}. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexcepted error fetching message stats. Error: {e}.")
+        logging.error(f"Unexpected error fetching message stats for channel {channel.id}. Error: {e}.")
                 
 # Trigger events based on commands types in Discord messages
 @client.event
 async def on_message(message):
     try:
-        logging.info(f"Received message: '{message.content}'")
+        logging.info(f"Received message: '{message.content}' from user: '{message.author}'")
         
         if message.author == client.user:
             return  #ignore messages that this generates
@@ -180,91 +198,133 @@ async def on_message(message):
         elif content.startswith('!addquote'):
             quote = message.content[len('!addquote'):].strip()
             if quote:
-                add_quote(quote)
-                await message.channel.send('Quote added!')
+                try:
+                    add_quote(quote)
+                    await message.channel.send('Quote added!')
+                except IOError as e:
+                    logging.error(f"IOError while adding quote: {quote}. Error: {e}")
+                    await message.channel.send('Failed to add quote due to a file error.')
+                except Exception as e:
+                    logging.error(f"Unexpected error while adding quote: {quote}. Error: {e}")
+                    await message.channel.send('Failed to add quote due to an unexpected error.')
             else:
                 await message.channel.send('Please provide a quote.')
 
         # Generate and sent a random quote to the Discord channel
         elif '!paul' in content:
             user_id = str(message.author.id)
-            stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
-            save_stats(stats)   # Save updated stats here
-        
+            try:
+                stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
+                save_stats(stats)   # Save updated stats here
+            except KeyError as e:
+                logging.error(f"KeyError updating stats for user: {user_id} during !paul command processing. Error: {e}")
+            except OSError as e:
+                logging.error(f"OSError saving stats for user: {user_id} during !paul command processing. Error: {e}")
+            except Exception as e:
+                logging.error(f"Unexpected error updating stats for user: {user_id} during !paul command processing. Error: {e}")
+    
             if quotes:
-                random_quote = random.choice(quotes)
-                sent_message = await message.channel.send(random_quote)
+                try:
+                    random_quote = random.choice(quotes)
+                    sent_message = await message.channel.send(random_quote)
+                except Exception as e:
+                    logging.error(f"Unexpected error sending random quote: {e}")
+                    await message.channel.send('Failed to send random quote due to an unexpected error.')
             else:
                 await message.channel.send('No quotes available.')
             
         elif '!stats' in content:
-            # How many quotes are currently in the quotes.json file
-            total_quotes = len(quotes)
-            # Who has sent !paul commands the most
-            if stats["paul_commands"]:
-                top_user_id = max(stats["paul_commands"], key=stats["paul_commands"].get)
-                top_user = await client.fetch_user(int(top_user_id))
-                most_commands = stats["paul_commands"][top_user_id]
-                top_user_mention = f"<@{top_user_id}>"  #format the mention
-            else:
-                top_user = None
-                most_commands = 0
-                top_user_mention = "None"
-            # The quote that has had the most reactions in the channel
-            if stats["quote_reactions"]:
-                top_quote_id = max(stats["quote_reactions"], key=lambda k: stats["quote_reactions"][k]["reactions"])
-                top_quote = stats["quote_reactions"][top_quote_id]["content"]
-                most_reactions = stats["quote_reactions"][top_quote_id]["reactions"]
-            else:
-                top_quote = None
-                most_reactions = 0
+            try:
+                # How many quotes are currently in the quotes.json file
+                total_quotes = len(quotes)
+                # Who has sent !paul commands the most
+                if stats["paul_commands"]:
+                    top_user_id = max(stats["paul_commands"], key=stats["paul_commands"].get)
+                    top_user = await client.fetch_user(int(top_user_id))
+                    most_commands = stats["paul_commands"][top_user_id]
+                    top_user_mention = f"<@{top_user_id}>"  #format the mention
+                else:
+                    top_user = None
+                    most_commands = 0
+                    top_user_mention = "None"
+                # The quote that has had the most reactions in the channel
+                if stats["quote_reactions"]:
+                    top_quote_id = max(stats["quote_reactions"], key=lambda k: stats["quote_reactions"][k]["reactions"])
+                    top_quote = stats["quote_reactions"][top_quote_id]["content"]
+                    most_reactions = stats["quote_reactions"][top_quote_id]["reactions"]
+                else:
+                    top_quote = None
+                    most_reactions = 0
                 
-            # Format the stats message
-            # Create an Embed instance    
-            embed = discord.Embed(title="PaulBot Statistics", color=0x7289DA)    
-            # Add fields for each statistic
-            embed.add_field(name="Total Quotes", value=total_quotes, inline=False)
-            embed.add_field(name="-------------", value="", inline=False)  # This adds a clear divider
-            embed.add_field(name="Paul's Biggest Simp", value=f"{top_user_mention} with {most_commands} calls to PaulBot", inline=False)
-            embed.add_field(name="-------------", value="", inline=False)  # This adds a clear divider
-            embed.add_field(name="Most Popular Quote", value=f"With {most_reactions} Reactions:\n{top_quote}", inline=False)
-            embed.add_field(name="-------------", value="", inline=False)  # This adds a clear divider
-            embed.set_footer(text="Stats provided by PaulBot, about PaulBot, for you. He's a filthy self-reporter.")
-            await message.channel.send(embed=embed)
-    
+                # Format the stats message
+                # Create an Embed instance    
+                embed = discord.Embed(title="PaulBot Statistics", color=0x7289DA)    
+                # Add fields for each statistic
+                embed.add_field(name="Total Quotes", value=total_quotes, inline=False)
+                embed.add_field(name="-------------", value="", inline=False)  # This adds a clear divider
+                embed.add_field(name="Paul's Biggest Simp", value=f"{top_user_mention} with {most_commands} calls to PaulBot", inline=False)
+                embed.add_field(name="-------------", value="", inline=False)  # This adds a clear divider
+                embed.add_field(name="Most Popular Quote", value=f"With {most_reactions} Reactions:\n{top_quote}", inline=False)
+                embed.add_field(name="-------------", value="", inline=False)  # This adds a clear divider
+                embed.set_footer(text="Stats provided by PaulBot, about PaulBot, for you. He's a filthy self-reporter.")
+                await message.channel.send(embed=embed)
+            except KeyError as e:
+                logging.error(f"KeyError accessing stats: {e}")
+                await message.channel.send('Failed to retrieve stats due to a KeyError.')
+            except discord.NotFound as e:
+                logging.error(f"User not found while fetching stats: {e}")
+                await message.channel.send('Failed to retrieve user for stats: User Not Found.')
+            except discord.HTTPException as e:
+                logging.error(f"HTTPException while fetching stats: {e}")
+                await message.channel.send('Failed to retrieve stats due to an HTTP error.')
+            except Exception as e:
+                logging.error(f"Unexpected error retrieving stats: {e}")
+                await message.channel.send('Failed to retrieve stats due to an unexpected error.')
         # Fetch message statistics retroactively
         elif '!fetch' in content:
-            await fetch_message_stats(message.channel)
+            try:
+                await fetch_message_stats(message.channel)
+            except Exception as e:
+                logging.error(f"Error fetching message stats for channel: {message.channel.id}. Error: {e}")
+                await message.channel.send('Failed to fetch message stats.')
         
         # Display a list of available commands to the end user in Discord
         elif '!help' in content:
-            # Define the list of available commands and their descriptions
-            command_list = [
-                ("!test", "Test command - displays a test message."),
-                ("!addquote <quote>", "Add a quote to the list of quotes."),
-                ("!paul", "Display a random quote from the list of quotes."),
-                ("!stats", "Display statistics for PaulBot."),
-                ("!help", "Display this message."),
-                ("!fetch", "Scan through messages to update stats.")
-            ]
+            try:
+                # Define the list of available commands and their descriptions
+                command_list = [
+                    ("!test", "Test command - displays a test message."),
+                    ("!addquote <quote>", "Add a quote to the list of quotes."),
+                    ("!paul", "Display a random quote from the list of quotes."),
+                    ("!stats", "Display statistics for PaulBot."),
+                    ("!help", "Display this message."),
+                    ("!fetch", "Scan through messages to update stats.")
+                ]
 
-            # Format the list of commands
-            formatted_commands = "\n".join(f"- **{command[0]}**: {command[1]}" for command in command_list)
+                # Format the list of commands
+                formatted_commands = "\n".join(f"- **{command[0]}**: {command[1]}" for command in command_list)
 
-            # Construct the help message
-            help_message = (
-                "Here are the available commands:\n"
-                f"{formatted_commands}"
-            )
+                # Construct the help message
+                help_message = (
+                    "Here are the available commands:\n"
+                    f"{formatted_commands}"
+                )
 
-            # Send the help message to the channel
-            await message.channel.send(help_message)
+                # Send the help message to the channel
+                await message.channel.send(help_message)
+            except Exception as e:
+                logging.error(f"Unexpected error sending help message: {e}.")
+                await message.channel.send('Failed to send help message due to an unexpected error.')
     except discord.HTTPException as e:
-        logging.error(f"HTTPException: Error processing Discord command. Error: {e}.")
+        logging.error(f"HTTPException: Error processing Discord command: {message.content}. Error: {e}.")
     except discord.Forbidden as e:
-        logging.error(f"Forbidden: Insufficient premissions to process Discord command. Error: {e}.")
+        logging.error(f"Forbidden: Insufficient permissions to process Discord command: {message.content}. Error: {e}.")
+    except discord.NotFound as e:
+        logging.error(f"NotFound: Resource not found while processing Discord command: {message.content}. Error: {e}.")
+    except discord.InvalidArgument as e:
+        logging.error(f"InvalidArgument: Invalid argument encountered while processing Discord command: {message.content}. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexpected error processing Discord command. Error: {e}.")
+        logging.error(f"Unexpected error processing Discord command: {message.content}. Error: {e}.")
 
 # Collect reaction statistics
 @client.event
@@ -286,11 +346,17 @@ async def on_reaction_add(reaction, user):
                     save_stats(stats) # Save stats here
                     break   # Stop checking quotes once a match is found
     except discord.HTTPException as e:
-        logging.error(f"HTTPException: Error processing reaction add. Error: {e}.")
+        logging.error(f"HTTPException: Error processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except discord.Forbidden as e:
-        logging.error(f"Forbidden: Insufficient premissions to process reaction add from Discord. Error: {e}.")
+        logging.error(f"Forbidden: Insufficient permissions to process reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
+    except KeyError as e:
+        logging.error(f"KeyError: Attempted to access a non-existent key while processing reaction addition for message ID {message.id} by user ID {user.id}. Key: {e}.")
+    except TypeError as e:
+        logging.error(f"TypeError: Encountered a type error while processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
+    except OSError as e:
+        logging.error(f"OSError: Failed to save stats while processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexpected error processing reaction add: {e}.")
+        logging.error(f"Unexpected error processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
         
 # Remove reaction statistics
 @client.event
@@ -312,14 +378,20 @@ async def on_reaction_remove(reaction, user):
                         save_stats(stats)   #Save stats here
                     break   # Stop checking quotes once a match is found
     except discord.HTTPException as e:
-        logging.error(f"HTTPException: Error processing reaction remove. Error: {e}.")
+        logging.error(f"HTTPException: Error processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except discord.Forbidden as e:
-        logging.error(f"Forbidden: Insufficient premissions to process reaction remove from Discord. Error: {e}.")
+        logging.error(f"Forbidden: Insufficient permissions to process reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
+    except KeyError as e:
+        logging.error(f"KeyError: Attempted to access a non-existent key while processing reaction removal for message ID {message.id} by user ID {user.id}. Key: {e}.")
+    except TypeError as e:
+        logging.error(f"TypeError: Encountered a type error while processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
+    except OSError as e:
+        logging.error(f"OSError: Failed to save stats while processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexpected error processing reaction remove: {e}.")
+        logging.error(f"Unexpected error processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
 
 # Run the Discord bot with the loaded token
-if __name__ == "__main__":        
+if __name__ == "__main__":      # Ensure that bot is being run directly instead of inside another script  
     try:        
         client.run(TOKEN)
     except discord.LoginFailure as e:

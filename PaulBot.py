@@ -1,4 +1,3 @@
-from pickle import NONE
 import discord
 import random
 import json

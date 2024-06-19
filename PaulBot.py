@@ -127,7 +127,7 @@ async def fetch_message_stats(channel):
     if stats.get("fetch_completed", False) == True:
         await channel.send("Fetch already completed. Skipping fetch.")
         return
-        
+    logging.info(f"Fetching message stats from channel: {channel.name}")    
     async for message in channel.history(limit=None):   # Fetch all messages in the channel after the last fetch command
         content = message.content.lower()
                

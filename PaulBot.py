@@ -10,20 +10,33 @@ from logging.handlers import RotatingFileHandler
 def setup_logging():
     # Configure logging to a file
     logging.basicConfig(
-       filename='paulbot.log',
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        level=logging.INFO
+       level=logging.INFO,
+       format='%(asctime)s - %(levelname)s - %(message)s',
+       handlers=[
+           RotatingFileHandler('paulbot.log', maxBytes=1024*1024, backupCount=5),
+           logging.StreamHandler()
+           ]
     )
-
-    # Configure a rotating file handler to keep logs from growing too large
-    handler = RotatingFileHandler('paulbot.log', maxBytes=1024*1024, backupCount=5)
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logging.getLogger('').addHandler(handler)
-
+    
 # Initialize logging
 setup_logging()    
+
+# Function to handle file operations with error handling and logging
+def handle_file_operation(file_path, operation_func, *args, **kwargs):
+    try:
+        return operation_func(file_path, *args, **kwargs)
+    except FileNotFoundError:
+        logging.error(f"FileNotFoundError: File '{file_path}' not found.")
+        return None
+    except json.JSONDecodeError as e:
+        logging.error(f"JSONDecodeError: Failed to decode JSON in '{file_path}'. Error: {e}. Validate that file is not empty and is formatted in JSON.")
+        return None
+    except OSError as e:
+        logging.error(f"OSError: Failed to perform operation on '{file_path}'. Error: {e}.")
+        return None
+    except Exception as e:
+        logging.error(f"Unexpected error during file operation on '{file_path}'. Error: {e}.")
+        return None
 
 # Load environment variables for Discord token
 load_dotenv()
@@ -45,55 +58,31 @@ client = discord.Client(intents=intents)
 quotes_file = 'quotes.json'  # File to store quotes
 stats_file = 'stats.json'   # File to store stats
 
+#Helper functions for file operations
+def load_json_file(path):
+    with open(path, 'r') as file:
+        return json.load(file)
+    
+def save_json_file(path, data):
+    with open(path, 'w') as file:
+        json.dump(data, file, indent=4)
+
 # Load existing quotes from file
 def load_quotes():
-    try:
-        with open(quotes_file, 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        logging.warning(f"FileNotFoundError: Quotes file '{quotes_file}' not found.")
-        return []
-    except json.JSONDecodeError as e:
-        logging.error(f"JSONDecodeError: Failed to decode JSON in '{quotes_file}'. Error: {e}. Validate that file is not empty and is formatted in JSON.")
-        return []
-    except Exception as e:
-        logging.error(f"Unexpected error loading quotes from '{quotes_file}'. Error: {e}.")
-        return []
+    return handle_file_operation(quotes_file, load_json_file) or []
 
 # Save quotes to file
 def save_quotes(quotes):
-    try:
-        with open(quotes_file, 'w') as file:
-            json.dump(quotes, file, indent=4)
-    except OSError as e:
-        logging.error(f"OSError: Failed to save quotes to '{quotes_file}'. Error: {e}.")
-    except Exception as e:
-        logging.error(f"Unexpected error saving quotes to '{quotes_file}'. Error: {e}.")
+    handle_file_operation(quotes_file, save_json_file, quotes)
         
 # Load existing stats from file
 def load_stats():
     default_stats = {"paul_commands": {}, "quote_reactions": {}}
-    try:
-        with open(stats_file, 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        logging.warning(f"FileNotFoundError: Stats file '{stats_file}' not found.")
-    except json.JSONDecodeError as e:
-        logging.warning(f"JSONDecodeError: Failed to decode JSON in '{stats_file}'. Error: {e}. Validate that the file is not empty and is formatted in JSON.")
-    except Exception as e:
-        logging.error(f"Unexpected error loading stats from '{stats_file}'. Error: {e}.")
-    # Return the default stats if any exception occurred.
-    return default_stats    
+    return handle_file_operation(stats_file, load_json_file) or default_stats
     
 # Save stats to file
 def save_stats (stats):
-    try:
-        with open(stats_file, 'w') as file:
-            json.dump(stats, file, indent=4)
-    except OSError as e:
-        logging.error(f"OSError: Failed to save stats to '{stats_file}'. Error: {e}.")
-    except Exception as e:
-        logging.error(f"Unexpected error saving stats to '{stats_file}'. Error: {e}.")
+    handle_file_operation(stats_file, save_json_file, stats)
 
 # Add a new quote
 def add_quote(quote):

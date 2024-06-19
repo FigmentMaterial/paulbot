@@ -1,11 +1,11 @@
 import discord
 import random
 import json
-from dotenv import load_dotenv
 import os
 import logging
 from logging.handlers import RotatingFileHandler
 from functools import wraps
+from dotenv import load_dotenv
 
 # Setup a logging function to process error handling throughout the script
 def setup_logging():
@@ -114,13 +114,6 @@ def add_quote(quote):
 quotes = load_quotes()  # Load existing quotes from file
 stats = load_stats()    # Load existing stats from file
 
-# Trigger event once bot is connected to Discord to notify server that it is ready
-@client.event
-@discord_exception_handler
-async def on_ready():
-    logging.info(f"Logged in as {client.user.name}")
-    logging.info(f"{client.user.name} is ready to receive commands!")
-
 # Fetch previous content for statistics
 @discord_exception_handler    
 async def fetch_message_stats(channel):
@@ -172,6 +165,13 @@ async def fetch_message_stats(channel):
         
     # Post confirmation to channel
     await channel.send('Fetched stats from message history.')
+
+# Trigger event once bot is connected to Discord to notify server that it is ready
+@client.event
+@discord_exception_handler
+async def on_ready():
+    logging.info(f"Logged in as {client.user.name}")
+    logging.info(f"{client.user.name} is ready to receive commands!")
                 
 # Trigger events based on commands types in Discord messages
 @client.event

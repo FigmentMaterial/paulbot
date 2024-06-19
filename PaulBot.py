@@ -107,9 +107,9 @@ def add_quote(quote):
         quotes.append(quote)
         save_quotes(quotes)
     except AttributeError as e:
-        logging.error(f"AttributeError: Failed to add quote to '{quotes_file}'. Error: {e}.")
+        logging.error(f"AttributeError: Failed to add quote '{quote}' to '{quotes_file}'. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexpected error adding quote to '{quotes_file}'. Error: {e}")
+        logging.error(f"Unexpected error adding quote '{quote}' to '{quotes_file}'. Error: {e}")
 
 quotes = load_quotes()  # Load existing quotes from file
 stats = load_stats()    # Load existing stats from file
@@ -140,9 +140,9 @@ async def fetch_message_stats(channel):
             except KeyError as e:
                 logging.error(f"KeyError updating paul_commands for user: {user_id} during !fetch process. Error: {e}")
             except OSError as e:
-                logging.error(f"OSError saving stats while tracking !paul usage during !fetch process. Error: {e}")
+                logging.error(f"OSError saving stats while tracking !paul usage for user '{user_id}' during !fetch process. Error: {e}")
             except Exception as e:
-                logging.error(f"Unexpected error while tracking !paul usage during !fetch process. Error: {e}")
+                logging.error(f"Unexpected error while tracking !paul usage for user '{user_id}' during !fetch process. Error: {e}")
             continue    #Skip further processing for non-PaulBot messages
             
         # Track reactions to quotes
@@ -160,11 +160,11 @@ async def fetch_message_stats(channel):
                                 stats["quote_reactions"][quote] = {"content": quote, "reactions": reactions_count}
                             save_stats(stats)  # Save updated stats here
                     except KeyError as e:
-                        logging.error(f"KeyError updating quote_reactions for quote: {quote} during !fetch process. Error: {e}")
+                        logging.error(f"KeyError updating quote_reactions for quote {quote} during !fetch process. Error: {e}")
                     except OSError as e:
-                        logging.error(f"OSError saving stats while tracking reactions during !fetch process. Error: {e}")
+                        logging.error(f"OSError saving stats while tracking reactions for quote {quote} during !fetch process. Error: {e}")
                     except Exception as e:
-                        logging.error(f"Unexpected error while tracking reactions during !fetch process. Error: {e}")
+                        logging.error(f"Unexpected error while tracking reactions for quote {quote} during !fetch process. Error: {e}")
         
     # Set the fetch_completed flag to True after processing
     stats["fetch_completed"] = True

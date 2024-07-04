@@ -1,6 +1,6 @@
 {
     "paul_commands": {
-        "177902880714522624": 300,
+        "177902880714522624": 301,
         "405099653357502466": 40,
         "466034731784601610": 160,
         "178020850061017088": 184,
@@ -216,6 +216,10 @@
         },
         "https://tenor.com/view/minion-banana-gif-minion-minions-gif-81650879192259967": {
             "content": "https://tenor.com/view/minion-banana-gif-minion-minions-gif-81650879192259967",
+            "reactions": 1
+        },
+        "... gay?": {
+            "content": "... gay?",
             "reactions": 1
         }
     },

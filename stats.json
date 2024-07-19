@@ -1,8 +1,8 @@
 {
     "paul_commands": {
-        "177902880714522624": 307,
+        "177902880714522624": 309,
         "405099653357502466": 41,
-        "466034731784601610": 168,
+        "466034731784601610": 169,
         "178020850061017088": 192,
         "197947126133555200": 24,
         "241811288332828672": 31,
@@ -120,7 +120,7 @@
         },
         "I love you": {
             "content": "I love you",
-            "reactions": 2
+            "reactions": 5
         },
         "My opinion on the subject holds little if any weight so you do you fam. Enjoy those cat bois .": {
             "content": "My opinion on the subject holds little if any weight so you do you fam. Enjoy those cat bois .",

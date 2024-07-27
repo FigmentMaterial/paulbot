@@ -224,10 +224,14 @@
         },
         "https://tenor.com/view/rick-and-morty-sun-good-gif-19509566": {
             "content": "https://tenor.com/view/rick-and-morty-sun-good-gif-19509566",
-            "reactions": 3
+            "reactions": 4
         },
         "Fuuuuck I don't want to be here": {
             "content": "Fuuuuck I don't want to be here",
+            "reactions": 1
+        },
+        "Dude, they know that it's illegal for me to kill them and they do some brazen shit lol": {
+            "content": "Dude, they know that it's illegal for me to kill them and they do some brazen shit lol",
             "reactions": 1
         }
     },

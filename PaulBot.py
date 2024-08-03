@@ -5,6 +5,7 @@ import os
 import logging
 import pyttsx3
 import re
+import asyncio
 from pydub import AudioSegment
 from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler

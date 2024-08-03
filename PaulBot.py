@@ -101,6 +101,7 @@ intents = discord.Intents.none()
 intents.messages = True  # Enable message events
 intents.message_content = True  # Enable message content
 intents.reactions = True # Enable reaction events
+intents.guilds = True # Enable server data so the bot can join voice chat
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 

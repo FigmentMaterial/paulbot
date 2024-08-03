@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 def setup_logging():
     # Configure logging to a file
     logging.basicConfig(
-       level=logging.INFO,
+       level=logging.DEBUG, # Set to DEBUG for more detailed logs
        format='%(asctime)s - %(levelname)s - %(message)s',
        handlers=[
            RotatingFileHandler('paulbot.log', maxBytes=1024*1024, backupCount=5),
@@ -258,17 +258,18 @@ async def on_ready():
     else:
         logging.error(f"Guild or voice channel not found. Unable to connect.")
         
+    await reconnect_voice_client()    
     read_quotes.start()
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
-async def read_quotes():
-    if not tts_engine:
-        logging.error("TTS engine is not initialized. Skipping reading quotes.")
-        return
-    
+async def read_quotes():  
     if bot.voice_clients:
         voice_client = bot.voice_clients[0]
+        if not voice_client.is_connected():
+            logging.warning("Voice client is not connected. Reconnecting...")
+            await reconnect_voice_client()
+            
         filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
         if filtered_quotes:
             quote = random.choice(filtered_quotes)
@@ -279,12 +280,27 @@ async def read_quotes():
             audio.export('quote.wav', format='wav')
             
             source = discord.FFmpegPCMAudio('quote.wav')
-            if voice_client.is_connected() and not voice_client.is_playing():
+            if not voice_client.is_playing():
                 voice_client.play(source)
                 
             # Clean up temporary files
             os.remove('quote.mp3')    
             os.remove('quote.wav')
+        else:
+            logging.warning("No voice clients found. Attempting to reconnect...")
+            await reconnect_voice_client()
+            
+async def reconnect_voice_client():
+    try:
+        guild = bot.get_guild(int(GUILD_ID))
+        channel = guild.get_channel(int(VOICE_CHANNEL_ID))
+        if guild and channel:
+            await channel.connect(timeout=60)
+            logging.info(f"Reconnected to voice channel: {channel.name}")
+        else:
+            logging.error("Guild or voice channel not found during reconnection attempt.")
+    except Exception as e:
+        logging.error(f"Error during reconnection: {e}")
             
 # Trigger events based on commands types in Discord messages
 @bot.event

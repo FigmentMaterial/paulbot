@@ -82,8 +82,8 @@ def discord_exception_handler(func):
 # Load environment variables for Discord token
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD_ID = int(os.getenv('DISCORD_GUILD_ID'))
-VOICE_CHANNEL_ID = int(os.getenv('VOICE_CHANNEL_ID'))
+GUILD_ID = os.getenv('DISCORD_GUILD_ID')
+VOICE_CHANNEL_ID = os.getenv('VOICE_CHANNEL_ID')
 
 # Log the environment variabls for debugging
 logging.info(f"DISCORD_TOKEN: {TOKEN}")
@@ -211,16 +211,49 @@ async def on_ready():
     logging.info(f"Logged in as {bot.user.name}")
     logging.info(f"{bot.user.name} is ready to receive commands!")
     
+    # Convert environmental variables to integers
+    try:
+        guild_id = int(GUILD_ID)
+        channel_id = int(VOICE_CHANNEL_ID)
+    except:
+        logging.error(f"Error converting IDs to integers: {e}")
+        return
+    
     # Join the voice channel specified in the environment variables
-    guild = bot.get_guild(GUILD_ID)
+    guild = bot.get_guild(guild_id)
     logging.info(f"Bot detects guild {guild}")
-    channel = guild.get_channel(VOICE_CHANNEL_ID)
+    if guild is None:
+        logging.error(f"Guild with ID {guild_id} not found.")
+    else:
+        logging.info(f"Guild found: {guild.name}")
+        
+    channel = guild.get_channel(channel_id) if guild else None
     logging.info(f"Bot detects channel {channel}")
+    if channel is None:
+        logging.error(f"Voice channel with ID {channel_id} not found in guild {guild_id}.")
+    else:
+        logging.info(f"Voice channel found: {channel.name}")
     
     if guild and channel:
         if not bot.voice_clients:
-            await channel.connect()
-            logging.info(f"Joined voice channel: {channel.name}")
+            for attempt in range (3):   # Retry logic: try 3 times
+                logging.info(f"Connecting to voice... (attempt {attempt + 1})")
+                try:
+                    await channel.connect(timeout=60)   # Timeout set to 60 seconds
+                    logging.info(f"Successfully connected to voice channel: {channel.name}")
+                    break
+                except discord.ClientException as e:
+                    logging.error(f"ClientException while connecting to voice: {e}")
+                except discord.ConnectionClosed as e:
+                    logging.error(f"ConnectionClosed while connecting to voice: {e}")
+                except asyncio.TimeoutError:
+                    logging.error(f"Timed out connecting to voice on attempt {attempt + 1}")
+                except Exception as e:
+                    logging.error(f"Unexpected error connecting to voice: {e}")
+            else:
+                logging.error("Failed to connect to voice channel after 3 attempts.")
+        else:
+            logging.info(f"Already connected to a voice channel.")
     else:
         logging.error(f"Guild or voice channel not found. Unable to connect.")
         

@@ -213,7 +213,9 @@ async def on_ready():
     
     # Join the voice channel specified in the environment variables
     guild = bot.get_guild(GUILD_ID)
+    logging.info(f"Bot detects guild {guild}")
     channel = guild.get_channel(VOICE_CHANNEL_ID)
+    logging.info(f"Bot detects channel {channel}")
     
     if guild and channel:
         if not bot.voice_clients:

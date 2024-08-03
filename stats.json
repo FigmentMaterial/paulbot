@@ -1,12 +1,12 @@
 {
     "paul_commands": {
-        "177902880714522624": 288,
-        "405099653357502466": 40,
-        "466034731784601610": 156,
-        "178020850061017088": 156,
-        "197947126133555200": 24,
-        "241811288332828672": 26,
-        "300378168970182657": 19,
+        "177902880714522624": 320,
+        "405099653357502466": 41,
+        "466034731784601610": 171,
+        "178020850061017088": 204,
+        "197947126133555200": 29,
+        "241811288332828672": 31,
+        "300378168970182657": 20,
         "417117638569885696": 1
     },
     "quote_reactions": {
@@ -16,7 +16,7 @@
         },
         "https://imgur.com/31xXStZ": {
             "content": "https://imgur.com/31xXStZ",
-            "reactions": 9
+            "reactions": 13
         },
         "You don't have any idea how HIGH I am right now!": {
             "content": "You don't have any idea how HIGH I am right now!",
@@ -120,7 +120,7 @@
         },
         "I love you": {
             "content": "I love you",
-            "reactions": 2
+            "reactions": 5
         },
         "My opinion on the subject holds little if any weight so you do you fam. Enjoy those cat bois .": {
             "content": "My opinion on the subject holds little if any weight so you do you fam. Enjoy those cat bois .",
@@ -200,6 +200,38 @@
         },
         "Thanks for the stroke": {
             "content": "Thanks for the stroke",
+            "reactions": 1
+        },
+        "https://images-ext-1.discordapp.net/external/2r-Rc4ooSYtBgS54lygTFOG2GkvvXkbJCdUjpVA_ViE/https/media.tenor.com/cV7Vvt7kvP8AAAPo/anyone-here-tumbleweed.mp4": {
+            "content": "https://images-ext-1.discordapp.net/external/2r-Rc4ooSYtBgS54lygTFOG2GkvvXkbJCdUjpVA_ViE/https/media.tenor.com/cV7Vvt7kvP8AAAPo/anyone-here-tumbleweed.mp4",
+            "reactions": 1
+        },
+        "I got you fam": {
+            "content": "I got you fam",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1253597660959608842/image0.gif?ex=66766f4d&is=66751dcd&hm=3ac99cc5472ed6a7dd2939e3eebccbd9846932955d12ed56acd5cac164ac0459&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1253597660959608842/image0.gif?ex=66766f4d&is=66751dcd&hm=3ac99cc5472ed6a7dd2939e3eebccbd9846932955d12ed56acd5cac164ac0459&",
+            "reactions": 1
+        },
+        "https://tenor.com/view/minion-banana-gif-minion-minions-gif-81650879192259967": {
+            "content": "https://tenor.com/view/minion-banana-gif-minion-minions-gif-81650879192259967",
+            "reactions": 1
+        },
+        "... gay?": {
+            "content": "... gay?",
+            "reactions": 1
+        },
+        "https://tenor.com/view/rick-and-morty-sun-good-gif-19509566": {
+            "content": "https://tenor.com/view/rick-and-morty-sun-good-gif-19509566",
+            "reactions": 4
+        },
+        "Fuuuuck I don't want to be here": {
+            "content": "Fuuuuck I don't want to be here",
+            "reactions": 1
+        },
+        "Dude, they know that it's illegal for me to kill them and they do some brazen shit lol": {
+            "content": "Dude, they know that it's illegal for me to kill them and they do some brazen shit lol",
             "reactions": 1
         }
     },

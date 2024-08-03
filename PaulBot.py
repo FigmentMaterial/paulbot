@@ -1,11 +1,15 @@
 import discord
 import random
 import json
-from dotenv import load_dotenv
 import os
 import logging
+import pyttsx3
+import re
+from pydub import AudioSegment
+from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler
 from functools import wraps
+from dotenv import load_dotenv
 
 # Setup a logging function to process error handling throughout the script
 def setup_logging():
@@ -21,6 +25,21 @@ def setup_logging():
     
 # Initialize logging
 setup_logging()    
+
+# Initialize TTS engine
+try:
+    tts_engine = pyttsx3.init()
+    tts_engine.setProperty('rate',150)
+    logging.info("TTS engine initialized successfully.")
+except ImportError as e:
+    logging.error(f"ImportError: pyttsx3 module not found. Error: {e}")
+    tts_engine = None
+except RuntimeError as e:
+    logging.error(f"RuntimeError: Failed to initialize the TTS engine. Error: {e}")
+    tts_engine = None
+except Exception as e:
+    logging.error(f"Unexpected error initializing the TTS engine. Error: {e}")
+    tts_engine = None
 
 # Function to handle file operations with error handling and logging
 def handle_file_operation(file_path, operation_func, *args, **kwargs):
@@ -38,6 +57,11 @@ def handle_file_operation(file_path, operation_func, *args, **kwargs):
     except Exception as e:
         logging.error(f"Unexpected error during file operation on '{file_path}'. Error: {e}.")
         return None
+    
+# Helper function to check if a string contains a URL
+def contains_url(text):
+    url_pattern = re.compile(r'(https?://\S+|www\.\S+)')
+    return url_pattern.search(text) is not None
 
 # Decorator for handling Discord-specific exceptions
 def discord_exception_handler(func):
@@ -58,11 +82,19 @@ def discord_exception_handler(func):
 # Load environment variables for Discord token
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+GUILD_ID = int(os.getenv('DISCORD_GUILD_ID'))
+VOICE_CHANNEL_ID = int(os.getenv('DISCORD_VOICE_CHANNEL_ID'))
 
 # Check if the token is loaded correctly
 if TOKEN is None:
     logging.error("No Discord token found. Please set the DISCORD_TOKEN environment variable.")
     raise ValueError("No Discord token found. Please set the DISCORD_TOKEN environment variable.")
+if GUILD_ID is None:
+    logging.error("No Guild ID found. Please set the DISCORD_GUILD_ID environment variable.")
+    raise ValueError("No Guild ID found. Please set the DISCORD_GUILD_ID environment variable.")
+if VOICE_CHANNEL_ID is None:
+    logging.error("No Channel ID found. Please set the VOICE_CHANNEL_ID environment variable.")
+    raise ValueError("No Channel ID found. Please set the VOICE_CHANNEL_ID environment variable.")
 
 # Define your intents (Discord security)
 intents = discord.Intents.none()
@@ -70,7 +102,7 @@ intents.messages = True  # Enable message events
 intents.message_content = True  # Enable message content
 intents.reactions = True # Enable reaction events
 
-client = discord.Client(intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents)
 
 quotes_file = 'quotes.json'  # File to store quotes
 stats_file = 'stats.json'   # File to store stats
@@ -107,19 +139,12 @@ def add_quote(quote):
         quotes.append(quote)
         save_quotes(quotes)
     except AttributeError as e:
-        logging.error(f"AttributeError: Failed to add quote to '{quotes_file}'. Error: {e}.")
+        logging.error(f"AttributeError: Failed to add quote '{quote}' to '{quotes_file}'. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexpected error adding quote to '{quotes_file}'. Error: {e}")
+        logging.error(f"Unexpected error adding quote '{quote}' to '{quotes_file}'. Error: {e}")
 
 quotes = load_quotes()  # Load existing quotes from file
 stats = load_stats()    # Load existing stats from file
-
-# Trigger event once bot is connected to Discord to notify server that it is ready
-@client.event
-@discord_exception_handler
-async def on_ready():
-    logging.info(f"Logged in as {client.user.name}")
-    logging.info(f"{client.user.name} is ready to receive commands!")
 
 # Fetch previous content for statistics
 @discord_exception_handler    
@@ -127,12 +152,12 @@ async def fetch_message_stats(channel):
     if stats.get("fetch_completed", False) == True:
         await channel.send("Fetch already completed. Skipping fetch.")
         return
-        
+    logging.info(f"Fetching message stats from channel: {channel.name}")    
     async for message in channel.history(limit=None):   # Fetch all messages in the channel after the last fetch command
         content = message.content.lower()
                
         # Track !paul command usage
-        if message.author != client.user and '!paul' in content:
+        if message.author != bot.user and '!paul' in content:
             user_id = str(message.author.id)
             try:
                 stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
@@ -140,13 +165,13 @@ async def fetch_message_stats(channel):
             except KeyError as e:
                 logging.error(f"KeyError updating paul_commands for user: {user_id} during !fetch process. Error: {e}")
             except OSError as e:
-                logging.error(f"OSError saving stats while tracking !paul usage during !fetch process. Error: {e}")
+                logging.error(f"OSError saving stats while tracking !paul usage for user '{user_id}' during !fetch process. Error: {e}")
             except Exception as e:
-                logging.error(f"Unexpected error while tracking !paul usage during !fetch process. Error: {e}")
+                logging.error(f"Unexpected error while tracking !paul usage for user '{user_id}' during !fetch process. Error: {e}")
             continue    #Skip further processing for non-PaulBot messages
             
         # Track reactions to quotes
-        if message.author == client.user:
+        if message.author == bot.user:
             for quote in quotes:
                 if quote.lower() in content:
                     try:    
@@ -160,11 +185,11 @@ async def fetch_message_stats(channel):
                                 stats["quote_reactions"][quote] = {"content": quote, "reactions": reactions_count}
                             save_stats(stats)  # Save updated stats here
                     except KeyError as e:
-                        logging.error(f"KeyError updating quote_reactions for quote: {quote} during !fetch process. Error: {e}")
+                        logging.error(f"KeyError updating quote_reactions for quote {quote} during !fetch process. Error: {e}")
                     except OSError as e:
-                        logging.error(f"OSError saving stats while tracking reactions during !fetch process. Error: {e}")
+                        logging.error(f"OSError saving stats while tracking reactions for quote {quote} during !fetch process. Error: {e}")
                     except Exception as e:
-                        logging.error(f"Unexpected error while tracking reactions during !fetch process. Error: {e}")
+                        logging.error(f"Unexpected error while tracking reactions for quote {quote} during !fetch process. Error: {e}")
         
     # Set the fetch_completed flag to True after processing
     stats["fetch_completed"] = True
@@ -172,14 +197,60 @@ async def fetch_message_stats(channel):
         
     # Post confirmation to channel
     await channel.send('Fetched stats from message history.')
+
+# Trigger event once bot is connected to Discord to notify server that it is ready
+@bot.event
+@discord_exception_handler
+async def on_ready():
+    logging.info(f"Logged in as {bot.user.name}")
+    logging.info(f"{bot.user.name} is ready to receive commands!")
+    
+    # Join the voice channel specified in the environment variables
+    guild = bot.get_guild(GUILD_ID)
+    channel = guild.get_channel(VOICE_CHANNEL_ID)
+    
+    if guild and channel:
+        if not bot.voice_clients:
+            await channel.connect()
+            logging.info(f"Joined voice channel: {channel.name}")
+    else:
+        logging.error(f"Guild or voice channel not found. Unable to connect.")
+        
+    read_quotes.start()
+        
+# Task to read quotes at intervals
+@tasks.loop(minutes=1)  # Change interval as desired
+async def read_quotes():
+    if not tts_engine:
+        logging.error("TTS engine is not initialized. Skipping reading quotes.")
+        return
+    
+    if bot.voice_clients:
+        voice_client = bot.voice_clients[0]
+        filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
+        if filtered_quotes:
+            quote = random.choice(filtered_quotes)
+            tts_engine.save_to_file(quote, 'quote.mp3')
+            tts_engine.runAndWait()
+            
+            audio = AudioSegment.from_mp3('quote.mp3')
+            audio.export('quote.wav', format='wav')
+            
+            source = discord.FFmpegPCMAudio('quote.wav')
+            if voice_client.is_connected() and not voice_client.is_playing():
+                voice_client.play(source)
                 
+            # Clean up temporary files
+            os.remove('quote.mp3')    
+            os.remove('quote.wav')
+            
 # Trigger events based on commands types in Discord messages
-@client.event
+@bot.event
 @discord_exception_handler
 async def on_message(message):
     logging.info(f"Received message: '{message.content}' from user: '{message.author}'")
         
-    if message.author == client.user:
+    if message.author == bot.user:
         return  #ignore messages that this generates
 
     # Convert the message content to lowercase for processing
@@ -236,7 +307,7 @@ async def on_message(message):
             # Who has sent !paul commands the most
             if stats["paul_commands"]:
                 top_user_id = max(stats["paul_commands"], key=stats["paul_commands"].get)
-                top_user = await client.fetch_user(int(top_user_id))
+                top_user = await bot.fetch_user(int(top_user_id))
                 most_commands = stats["paul_commands"][top_user_id]
                 top_user_mention = f"<@{top_user_id}>"  #format the mention
             else:
@@ -313,16 +384,16 @@ async def on_message(message):
             await message.channel.send('Failed to send help message due to an unexpected error.')
 
 # Collect reaction statistics
-@client.event
+@bot.event
 async def on_reaction_add(reaction, user):
     try:
-        if user == client.user:
+        if user == bot.user:
             return      # Ignore reactions that PaulBot generates
     
         message = reaction.message
         content = message.content.lower()
     
-        if message.author == client.user:
+        if message.author == bot.user:
             for quote in quotes:
                 if quote.lower() in content:
                     if quote in stats["quote_reactions"]:
@@ -345,16 +416,16 @@ async def on_reaction_add(reaction, user):
         logging.error(f"Unexpected error processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
         
 # Remove reaction statistics
-@client.event
+@bot.event
 async def on_reaction_remove(reaction, user):
     try:
-        if user == client.user:
+        if user == bot.user:
             return      # Ignore reactions that PaulBot generates
     
         message = reaction.message
         content = message.content.lower()
     
-        if message.author == client.user:
+        if message.author == bot.user:
             for quote in quotes:
                 if quote.lower() in content:
                     if quote in stats["quote_reactions"] and stats["quote_reactions"][quote]["reactions"] > 0:
@@ -379,7 +450,7 @@ async def on_reaction_remove(reaction, user):
 # Run the Discord bot with the loaded token
 if __name__ == "__main__":      # Ensure that bot is being run directly instead of inside another script  
     try:        
-        client.run(TOKEN)
+        bot.run(TOKEN)
     except discord.LoginFailure as e:
         logging.error(f"LoginFailure: Invalid Discord token provided. Error: {e}.")
     except discord.PrivilegedIntentsRequired as e:

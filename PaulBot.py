@@ -85,6 +85,11 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_ID = os.getenv('DISCORD_GUILD_ID')
 VOICE_CHANNEL_ID = os.getenv('DISCORD_VOICE_CHANNEL_ID')
 
+# Log the environment variabls for debugging
+logging.info(f"DISCORD_TOKEN: {TOKEN}")
+logging.info(f"GUILD_ID: {GUILD_ID}")
+logging.info(f"VOICE_CHANNEL_ID: {VOICE_CHANNEL_ID}")
+
 # Check if the token is loaded correctly
 if TOKEN is None:
     logging.error("No Discord token found. Please set the DISCORD_TOKEN environment variable.")

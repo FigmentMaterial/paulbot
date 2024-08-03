@@ -82,8 +82,8 @@ def discord_exception_handler(func):
 # Load environment variables for Discord token
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD_ID = os.getenv('DISCORD_GUILD_ID')
-VOICE_CHANNEL_ID = os.getenv('VOICE_CHANNEL_ID')
+GUILD_ID = int(os.getenv('DISCORD_GUILD_ID'))
+VOICE_CHANNEL_ID = int(os.getenv('VOICE_CHANNEL_ID'))
 
 # Log the environment variabls for debugging
 logging.info(f"DISCORD_TOKEN: {TOKEN}")

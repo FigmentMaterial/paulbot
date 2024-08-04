@@ -54,7 +54,7 @@ class _TTS:
         else:
             logging.error("TTS engine is not initialized.")
             
-    def __del__(self):
+    def cleanup(self):
         if self.engine:
             self.engine.stop()
             del self.engine
@@ -352,7 +352,7 @@ def convert_tts_to_mp3(quote):
         logging.error(f"Error converting quote to MP3 file: {e}")
         return False
     finally:
-        del tts # Explicitly delete the TTS object to clean up
+        tts.cleanup() # Use a cleanup method to handle TTS object deletion
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired

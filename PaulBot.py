@@ -282,25 +282,29 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
     return False
 
 # Function to perform TTS conversion asynchronously
-async def tts_to_mp3(quote):
-    loop = asyncio.get_event_loop()
-    with concurrent.futures.ThreadPoolExecutor() as pool:
-        await loop.run_in_executor(pool, convert_to_mp3, quote)
+def tts_to_mp3(quote):     
+    def convert_to_mp3(quote):
+        try:
+            logging.info("Attempting to convert quote to .mp3 file...")
         
-def convert_to_mp3(quote):
-    try:
-        logging.info("Attempting to convert quote to .mp3 file...")
-        if tts_engine is None:
-            logging.error("TTS engine is not initialized.")
-            return
+            # Check if the TTS engine is initialized
+            if tts_engine is None:
+                logging.error("TTS engine is not initialized.")
+                return
         
-        tts_engine.save_to_file(quote, 'quote.mp3')
-        tts_engine.runAndWait()
-        logging.info("TTS conversion runAndWait completed.")
-    except pyttsx3.engine.EngineError as e:
-        logging.error(f"TTS EngineError: {e}")
-    except Exception as e:
-        logging.error(f"Error converting quote to .mp3 file: {e}")
+            # Perform the TTS conversion
+            tts_engine.save_to_file(quote, 'quote.mp3')
+            tts_engine.runAndWait()
+            logging.info("TTS conversion runAndWait completed.")
+        
+        except pyttsx3.engine.EngineError as e:
+            logging.error(f"TTS EngineError: {e}")
+        except Exception as e:
+            logging.error(f"Error converting quote to .mp3 file: {e}")
+    
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future = executor.submit(convert_to_mp3, quote)
+        future.result(timeout=30)   # Timeout after 30 seconds
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
@@ -317,8 +321,10 @@ async def read_quotes():
             quote = random.choice(filtered_quotes)
             logging.info(f"Selected quote: {quote}")
             
-            # Convert TTS to MP3
-            await tts_to_mp3(quote)
+            # Convert TTS to MP3, offload to a separate thread
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(tts_to_mp3, quote)
+                await asyncio.wrap_future(future)
             logging.info("TTS conversion completed.")
 
             # Convert MP3 file to WAV

@@ -30,20 +30,29 @@ def setup_logging():
 # Initialize logging
 setup_logging()    
 
+# TTS class for instancing TTS conversions
+class _TTS:
+    def __init__(self):
+        self.engine = pyttsx3.init()
+        self.engine.setProperty('rate', 150)
+    def start(self, text_):
+        self.engine.say(text_)
+        self.engine.runAndWait()
+
 # Initialize TTS engine
-try:
-    tts_engine = pyttsx3.init()
-    tts_engine.setProperty('rate',150)
-    logging.info("TTS engine initialized successfully.")
-except ImportError as e:
-    logging.error(f"ImportError: pyttsx3 module not found. Error: {e}")
-    tts_engine = None
-except RuntimeError as e:
-    logging.error(f"RuntimeError: Failed to initialize the TTS engine. Error: {e}")
-    tts_engine = None
-except Exception as e:
-    logging.error(f"Unexpected error initializing the TTS engine. Error: {e}")
-    tts_engine = None
+#try:
+    #tts_engine = pyttsx3.init()
+    #tts_engine.setProperty('rate',150)
+    #logging.info("TTS engine initialized successfully.")
+#except ImportError as e:
+    #logging.error(f"ImportError: pyttsx3 module not found. Error: {e}")
+    #tts_engine = None
+#except RuntimeError as e:
+    #logging.error(f"RuntimeError: Failed to initialize the TTS engine. Error: {e}")
+    #tts_engine = None
+#except Exception as e:
+    #logging.error(f"Unexpected error initializing the TTS engine. Error: {e}")
+    #tts_engine = None
 
 # Function to handle file operations with error handling and logging
 def handle_file_operation(file_path, operation_func, *args, **kwargs):
@@ -282,29 +291,38 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
     return False
 
 # Function to perform TTS conversion asynchronously
-def tts_to_mp3(quote):     
-    def convert_to_mp3(quote):
-        try:
-            logging.info("Attempting to convert quote to .mp3 file...")
+#def tts_to_mp3(quote):     
+    #def convert_to_mp3(quote):
+        #try:
+            #logging.info("Attempting to convert quote to .mp3 file...")
         
             # Check if the TTS engine is initialized
-            if tts_engine is None:
-                logging.error("TTS engine is not initialized.")
-                return
+            #if tts_engine is None:
+                #logging.error("TTS engine is not initialized.")
+                #return
         
             # Perform the TTS conversion
-            tts_engine.save_to_file(quote, 'quote.mp3')
-            tts_engine.runAndWait()
-            logging.info("TTS conversion runAndWait completed.")
+            #tts_engine.save_to_file(quote, 'quote.mp3')
+            #tts_engine.runAndWait()
+            #logging.info("TTS conversion runAndWait completed.")
         
-        except pyttsx3.engine.EngineError as e:
-            logging.error(f"TTS EngineError: {e}")
-        except Exception as e:
-            logging.error(f"Error converting quote to .mp3 file: {e}")
+        #except pyttsx3.engine.EngineError as e:
+            #logging.error(f"TTS EngineError: {e}")
+        #except Exception as e:
+            #logging.error(f"Error converting quote to .mp3 file: {e}")
     
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(convert_to_mp3, quote)
-        future.result(timeout=30)   # Timeout after 30 seconds
+    #with concurrent.futures.ThreadPoolExecutor() as executor:
+        #future = executor.submit(convert_to_mp3, quote)
+        #future.result(timeout=30)   # Timeout after 30 seconds
+
+# Function to perform TTS conversion using _TTS class
+def convert_tts_to_mp3(quote):
+    try:
+        tts = _TTS()
+        tts.start(quote)
+        del tts
+    except Exception as e:
+        logging.error(f"Error converting quote to MP3 file: {e}")
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
@@ -321,11 +339,13 @@ async def read_quotes():
             quote = random.choice(filtered_quotes)
             logging.info(f"Selected quote: {quote}")
             
-            # Convert TTS to MP3, offload to a separate thread
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(tts_to_mp3, quote)
-                await asyncio.wrap_future(future)
-            logging.info("TTS conversion completed.")
+            # Run TTS conversion in a separate thread.
+            tts_thread = threading.Thread(target=convert_tts_to_mp3, args=(quote,))
+            tts_thread.start()
+            tts_thread.join(timeout=30) # Timeout 30 seconds
+            if tts_thread.is_alive():
+                logging.warning("TTS conversion timed out")
+                tts_thread.join()   # Ensure the thread is properly joined
 
             # Convert MP3 file to WAV
             try:

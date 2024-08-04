@@ -204,26 +204,20 @@ async def on_ready():
     
     # Join the voice channel specified in the environment variables
     guild = bot.get_guild(guild_id)
-    logging.info(f"Bot detects guild {guild}")
     if guild is None:
         logging.error(f"Guild with ID {guild_id} not found.")
     else:
         logging.info(f"Guild found: {guild.name}")
         
     channel = guild.get_channel(channel_id) if guild else None
-    logging.info(f"Bot detects channel {channel}")
     if channel is None:
         logging.error(f"Voice channel with ID {channel_id} not found in guild {guild_id}.")
-    else:
-        logging.info(f"Voice channel found: {channel.name}")
     
     if guild and channel:
         if not bot.voice_clients:
             for attempt in range (3):   # Retry logic: try 3 times
-                logging.info(f"Connecting to voice... (attempt {attempt + 1})")
                 try:
                     await channel.connect(timeout=60)   # Timeout set to 60 seconds
-                    logging.info(f"Successfully connected to voice channel: {channel.name}")
                     break
                 except discord.ClientException as e:
                     logging.error(f"ClientException while connecting to voice: {e}")
@@ -285,7 +279,7 @@ async def read_quotes():
         filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
         if filtered_quotes:
             quote = random.choice(filtered_quotes)
-            logging.info(f"Selected quote: {quote}")
+            logging.info(f"Selected quote to read aloud: {quote}")
             
             # Perform TTS conversion to MP3
             success = convert_tts_to_mp3(quote)

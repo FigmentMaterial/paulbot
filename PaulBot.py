@@ -270,32 +270,42 @@ async def read_quotes():
         if filtered_quotes:
             quote = random.choice(filtered_quotes)
             
+            # Generate the MP3 file
             try:
-                # Generate the MP3 file
+                # Quick logging info for debugging - Print current working directory and list files
+                logging.info(f"Current working directory: {os.getcwd()}")
+                logging.info(f"Files in the current directory: {os.listdir(os.getcwd())}")
+                # Convert quote to .mp3 file
                 tts_engine.save_to_file(quote, 'quote.mp3')
                 tts_engine.runAndWait()
+            except Exception as e:
+                logging.error(f"Error converting quote to MP3 file: {e}")
                         
-                # Check if the MP3 file was successfully created
-                if os.path.exists('quote.mp3'):
-                    logging.info("quote.mp3 successfully created")
-                else:
-                    logging.error("Failed to create 'quote.mp3'.")
-                    return
+            # Check if the MP3 file was successfully created
+            if os.path.exists('quote.mp3'):
+                logging.info("quote.mp3 successfully created")
+            else:
+                logging.error("Failed to create 'quote.mp3'.")
+                return
 
-                # Convert MP3 file to WAV
-                    audio = AudioSegment.from_mp3('quote.mp3')
-                    audio.export('quote.wav', format='wav')
+            # Convert MP3 file to WAV
+            try:
+                audio = AudioSegment.from_mp3('quote.mp3')
+                audio.export('quote.wav', format='wav')
+            except Exception as e:
+                logging.error(f"Error converting MP3 to WAV: {e}")
                         
-                # Check if the WAV file was successfully created
-                if os.path.exists('quote.wav'):
-                    logging.info("quote.wav successfully created")
-                else:
-                    logging.error("Failed to create 'quote.wav'.")
-                    return
+            # Check if the WAV file was successfully created
+            if os.path.exists('quote.wav'):
+                logging.info("quote.wav successfully created")
+            else:
+                logging.error("Failed to create 'quote.wav'.")
+                return
 
-                # Add a short dealy to ensure the file systems recognizes the new file.
-                await asyncio.sleep(1)
-
+            # Add a short delay to ensure the file systems recognizes the new file.
+            await asyncio.sleep(1)
+            
+            try:
                 source = discord.FFmpegPCMAudio('quote.wav')
                 if not voice_client.is_playing():
                     voice_client.play(source)
@@ -303,16 +313,18 @@ async def read_quotes():
                     # Wait for the playback to finish before proceeding
                     while voice_client.is_playing():
                         await asyncio.sleep(1)
-                        
             except Exception as e:
-                logging.error(f"Unexpected error in audio file processing: {e}")
+                logging.error(f"Error in audio playback: {e}")
                 
             finally:
                 # Clean up temporary files
-                if os.path.exists('quote.mp3'):
-                    os.remove('quote.mp3')
-                if os.path.exists('quote.wav'):
-                    os.remove('quote.wav')
+                try:
+                    if os.path.exists('quote.mp3'):
+                        os.remove('quote.mp3')
+                    if os.path.exists('quote.wav'):
+                        os.remove('quote.wav')
+                except Exception as e:
+                    logging.error(f"Error cleaning up audio files: {e}")
         else:
             logging.warning("No quotes available for playback.")
     else:

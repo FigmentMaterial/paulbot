@@ -57,8 +57,8 @@ class _TTS:
     def cleanup(self):
         if self.engine:
             self.engine.stop()
-            del self.engine
-            logging.info("TTS engine object deleted.")
+            #del self.engine
+            logging.info("TTS engine stopped.")
 
 # Initialize TTS engine
 #try:

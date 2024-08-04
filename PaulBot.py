@@ -346,6 +346,11 @@ async def read_quotes():
             if tts_thread.is_alive():
                 logging.warning("TTS conversion timed out")
                 tts_thread.join()   # Ensure the thread is properly joined
+                
+            # Check if the MP3 file was created successfully
+            if not os.path.exists('quote.mp3'):
+                logging.error("quote.mp3 was not created successfully.")
+                return
 
             # Convert MP3 file to WAV
             try:

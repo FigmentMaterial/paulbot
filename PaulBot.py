@@ -267,7 +267,8 @@ def tts_to_mp3(quote):
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
-async def read_quotes():  
+async def read_quotes():
+    logging.info("Starting task to read quotes into TTS.")
     if bot.voice_clients:
         voice_client = bot.voice_clients[0]
         if not voice_client.is_connected():
@@ -332,7 +333,10 @@ async def read_quotes():
     else:
         logging.warning("No voice clients found. Attempting to reconnect...")
         await reconnect_voice_client()
-            
+    
+    logging.info("Completed task to read quotes into TTS.")
+
+
 async def reconnect_voice_client():
     if bot.voice_clients:   # Check if already connected
         logging.info("Already connected to a voice channel. Reconnection unnecessary.")

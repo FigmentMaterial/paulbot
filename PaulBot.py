@@ -40,14 +40,24 @@ class _TTS:
         except Exception as e:
             logging.error(f"Failed to initialize TTS engine. Error: {e}")
             self.engine = None
+            
     def start(self, text, filename):
         if self.engine:
-            try:
-                self.engine.save_to_file(text, filename)
-                self.engine.runAndWait()
-                logging.info(f"TTS conversion to {filename} completed.")
-            except Exception as e:
-                logging.error(f"Error during TTS conversion. Error: {e}")
+            retries = 3
+            for attempt in range(retries):
+                try:
+                    self.engine.save_to_file(text, filename)
+                    self.engine.runAndWait()
+                    if os.path.exists(filename):
+                        logging.info(f"TTS conversion to {filename} completed.")
+                        break
+                    else:
+                        logging.error(f"Attempt {attempt + 1}: {filename} was not created. Retrying...")
+                except Exception as e:
+                    logging.error(f"Attempt {attempt + 1}: Error during TTS conversion. Error: {e}")
+                time.sleep(1)   # wait before retrying
+            else:
+                logging.error(f"Failed to create {filename} after {retries} attempts.")
         else:
             logging.error("TTS engine is not initialized.")
 

@@ -291,16 +291,27 @@ async def read_quotes():
             await reconnect_voice_client()
             
 async def reconnect_voice_client():
-    try:
-        guild = bot.get_guild(int(GUILD_ID))
-        channel = guild.get_channel(int(VOICE_CHANNEL_ID))
-        if guild and channel:
-            await channel.connect(timeout=60)
-            logging.info(f"Reconnected to voice channel: {channel.name}")
-        else:
-            logging.error("Guild or voice channel not found during reconnection attempt.")
-    except Exception as e:
-        logging.error(f"Error during reconnection: {e}")
+    max_retries = 5
+    retry_delay = 10    # seconds
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            guild = bot.get_guild(int(GUILD_ID))
+            channel = guild.get_channel(int(VOICE_CHANNEL_ID))
+            if guild and channel:
+                await channel.connect(timeout=60)
+                logging.info(f"Connected to voice channel: {channel.name}")
+                return
+            else:
+                logging.error("Guild or voice channel not found.")
+                return
+        except asyncio.TimeoutError:
+            logging.warning(f"Timeout while connecting to voice (attempt {attempt}/{max_retries}). Retrying in {retry_delay} seconds...")
+        except Exception as e:
+            logging.error(f"Error during connection attempt {attempt}/{max_retries}: {e}")
+        
+        await asyncio.sleep(retry_delay)
+    logging.error("Failed to connect to voice channel after multiple attempts.")
             
 # Trigger events based on commands types in Discord messages
 @bot.event

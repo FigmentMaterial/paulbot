@@ -283,59 +283,59 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
     return False
 
 # Function to perform TTS conversion in a separate thread
-def tts_to_mp3(quote):
-    max_retries = 3
-    retry_delay = 5 # seconds
+#def tts_to_mp3(quote):
+    #max_retries = 3
+    #retry_delay = 5 # seconds
     
-    def convert_to_mp3(quote):
-        try:
-            logging.info("Attempting to convert quote to .mp3 file...")
+    #def convert_to_mp3(quote):
+        #try:
+            #logging.info("Attempting to convert quote to .mp3 file...")
             
             # Check if the TTS engine is initialized
-            if tts_engine is None:
-                logging.error("TTS engine is not initialized.")
-                return
+            #if tts_engine is None:
+                #logging.error("TTS engine is not initialized.")
+                #return
             
             # Check the length of the quote
-            if len(quote) > 500:
-                logging.warning("Quote is too long for TTS conversion. Trimming quote.")
-                quote = quote[:500]
+            #if len(quote) > 500:
+                #logging.warning("Quote is too long for TTS conversion. Trimming quote.")
+                #quote = quote[:500]
                 
             # Perform the TTS conversion
-            tts_engine.save_to_file(quote, 'quote.mp3')
-            tts_engine.runAndWait()
-            logging.info("TTS conversion runAndWait completed.")
+            #tts_engine.save_to_file(quote, 'quote.mp3')
+            #tts_engine.runAndWait()
+            #logging.info("TTS conversion runAndWait completed.")
             
             # Check if .mp3 file successfully created.
-            if os.path.exists('quote.mp3'):
-                logging.info("Successfully created quote.mp3")
-            else:
-                logging.error("quote.mp3 is missing for some reason")
+            #if os.path.exists('quote.mp3'):
+                #logging.info("Successfully created quote.mp3")
+            #else:
+                #logging.error("quote.mp3 is missing for some reason")
                 
-        except pyttsx3.engine.EngineError as e:
-            logging.error(f"TTS EngineError: {e}")
-        except Exception as e:
-            logging.error(f"Error converting quote to MP3 file: {e}")
+        #except pyttsx3.engine.EngineError as e:
+            #logging.error(f"TTS EngineError: {e}")
+        #except Exception as e:
+            #logging.error(f"Error converting quote to MP3 file: {e}")
             
-    for attempt in range (max_retries):
-        try:
-            tts_thread = threading.Thread(target=convert_to_mp3, args=(quote,))
-            tts_thread.start()
-            tts_thread.join(timeout=30) # Timeout after 30 seconds
-            if tts_thread.is_alive():
-                logging.warning(f"TTS conversion attempt {attempt + 1} timed out.")
-                tts_thread.join()   # Ensure the thread is properly joined.
-            else:
-                logging.info("TTS conversion completed successfully.")
-                break
-        except Exception as e:
-            logging.error(f"Error during TTS conversion attempt {attempt + 1}: {e}")
+    #for attempt in range (max_retries):
+        #try:
+            #tts_thread = threading.Thread(target=convert_to_mp3, args=(quote,))
+            #tts_thread.start()
+            #tts_thread.join(timeout=30) # Timeout after 30 seconds
+            #if tts_thread.is_alive():
+                #logging.warning(f"TTS conversion attempt {attempt + 1} timed out.")
+                #tts_thread.join()   # Ensure the thread is properly joined.
+            #else:
+                #logging.info("TTS conversion completed successfully.")
+                #break
+        #except Exception as e:
+            #logging.error(f"Error during TTS conversion attempt {attempt + 1}: {e}")
             
-        if attempt < max_retries - 1:
-            logging.info(f"Retrying TTS conversion in {retry_delay} seconds...")
-            time.sleep(retry_delay)
-        else:
-            logging.error("Max retries reached. TTS conversion failed.")
+        #if attempt < max_retries - 1:
+            #logging.info(f"Retrying TTS conversion in {retry_delay} seconds...")
+            #time.sleep(retry_delay)
+        #else:
+            #logging.error("Max retries reached. TTS conversion failed.")
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
@@ -352,11 +352,16 @@ async def read_quotes():
             quote = random.choice(filtered_quotes)
             logging.info(f"Selected quote: {quote}")
             
+            # Convert TTS to MP3
+            tts_engine.save_to_file(quote, 'quote.mp3')
+            tts_engine.runAndWait()
+            logging.info("TTS conversion runAndWait completed.")
+
             # Offload TTS conversion to a separate thread
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(tts_to_mp3, quote)
-                await asyncio.wrap_future(future)
-            logging.info("TTS conversion completed.")
+            #with concurrent.futures.ThreadPoolExecutor() as executor:
+            #    future = executor.submit(tts_to_mp3, quote)
+            #    await asyncio.wrap_future(future)
+            #logging.info("TTS conversion completed.")
 
             # Convert MP3 file to WAV
             try:

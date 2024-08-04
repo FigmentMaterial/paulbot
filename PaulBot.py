@@ -298,9 +298,16 @@ async def read_quotes():
                 logging.error("Failed to create 'quote.wav'.")
                 return
 
+            # Add a short dealy to ensure the file systems recognizes the new file.
+            await asyncio.sleep(1)
+
             source = discord.FFmpegPCMAudio('quote.wav')
             if not voice_client.is_playing():
                 voice_client.play(source)
+                
+                # Wait for the playback to finish before proceeding
+                while voice_client.is_playing():
+                    await asyncio.sleep(1)
                 
             # Clean up temporary files
             os.remove('quote.mp3')    

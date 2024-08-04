@@ -268,7 +268,7 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
 # Function to perform TTS conversion using gTTS
 def convert_tts_to_mp3(quote):
     try:    
-        tts = gTTS(text=quote, lang='pa')
+        tts = gTTS(text=quote, lang='sv')
         tts.save('quote.mp3')
         logging.info("quote.mp3 was created successfully.")
         return True

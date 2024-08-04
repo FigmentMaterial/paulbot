@@ -1,3 +1,4 @@
+from ast import Try
 import discord
 import random
 import json
@@ -340,11 +341,26 @@ async def read_quotes():
                 
             finally:
                 # Clean up temporary files
+                logging.info("Starting cleanup of temporary files.")
                 try:
                     if os.path.exists('quote.mp3'):
-                        os.remove('quote.mp3')
+                        try:
+                            os.remove('quote.mp3')
+                            if not os.path.exists:
+                                logging.info("Deletion of quote.mp3 successful.")
+                            else:
+                                logging.warning("Deletion of quote.mp3 failed.")
+                        except Exception as e:
+                            logging.error(f"Error deleting quote.mp3: {e}")
                     if os.path.exists('quote.wav'):
-                        os.remove('quote.wav')
+                        try:
+                            os.remove('quote.wav')
+                            if not os.path.exists:
+                                logging.info("Deletion of quote.wav successful.")
+                            else:
+                                logging.warning("Deletion of quote.wav failed.")
+                        except Exception as e:
+                            logging.error(f"Error deleting quote.wav: {e}")
                 except Exception as e:
                     logging.error(f"Error cleaning up audio files: {e}")
         else:

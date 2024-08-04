@@ -6,7 +6,6 @@ import logging
 import time
 import re
 import asyncio
-import importlib
 from gtts import gTTS
 from pydub import AudioSegment
 from discord.ext import tasks, commands
@@ -18,7 +17,7 @@ from dotenv import load_dotenv
 def setup_logging():
     # Configure logging to a file
     logging.basicConfig(
-       level=logging.DEBUG, # Set to DEBUG for more detailed logs
+       level=logging.INFO, # Set to INFO for normal operation, change to DEBUG if needed
        format='%(asctime)s - %(levelname)s - %(message)s',
        handlers=[
            RotatingFileHandler('paulbot.log', maxBytes=1024*1024, backupCount=5),
@@ -257,7 +256,6 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
         if not is_file_in_use(filepath):
             try:
                 os.remove(filepath)
-                logging.info(f"{filepath} deleted successfully.")
                 return True
             except Exception as e:
                 logging.error(f"Attempt {attempt + 1}: Failed to delete {filepath}. Error: {e}")
@@ -270,7 +268,6 @@ def convert_tts_to_mp3(quote):
     try:    
         tts = gTTS(text=quote, lang='en')
         tts.save('quote.mp3')
-        logging.info("quote.mp3 was created successfully.")
         return True
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")
@@ -279,7 +276,6 @@ def convert_tts_to_mp3(quote):
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
 async def read_quotes():
-    logging.info("Starting task to read quotes into TTS.")
     if bot.voice_clients:
         voice_client = bot.voice_clients[0]
         if not voice_client.is_connected():
@@ -299,10 +295,8 @@ async def read_quotes():
             
             # Convert MP3 file to WAV
             try:
-                logging.info("Starting conversion to wav...")
                 audio = AudioSegment.from_mp3('quote.mp3')
                 audio.export('quote.wav', format='wav')
-                logging.info("Successfully created quote.wav")
             except Exception as e:
                 logging.error(f"Error converting MP3 to WAV: {e}")
 
@@ -312,19 +306,16 @@ async def read_quotes():
             try:
                 source = discord.FFmpegPCMAudio('quote.wav')
                 if not voice_client.is_playing():
-                    logging.info("Starting audio playback.")
                     voice_client.play(source)
                 
                     # Wait for the playback to finish before proceeding
                     while voice_client.is_playing():
                         await asyncio.sleep(1)
-                    logging.info("Finished audio playback.")
             except Exception as e:
                 logging.error(f"Error in audio playback: {e}")
                 
             finally:
                 # Clean up temporary files
-                logging.info("Starting cleanup of temporary files.")
                 try:
                    delete_file_with_retry('quote.mp3')
                    delete_file_with_retry('quote.wav')
@@ -335,9 +326,6 @@ async def read_quotes():
     else:
         logging.warning("No voice clients found. Attempting to reconnect...")
         await reconnect_voice_client()
-    
-    logging.info("Completed TTS read_quotes task iteration.")
-
 
 async def reconnect_voice_client():
     if bot.voice_clients:   # Check if already connected

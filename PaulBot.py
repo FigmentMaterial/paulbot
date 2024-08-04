@@ -329,10 +329,9 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
 
 # Function to perform TTS conversion using _TTS class
 def convert_tts_to_mp3(quote):
+    tts = _TTS()
     try:    
-        tts = _TTS()
         tts.start(quote, 'quote.mp3')
-        del tts
         if os.path.exists('quote.mp3'):
             logging.info("quote.mp3 was created successfully.")
             return True
@@ -342,6 +341,8 @@ def convert_tts_to_mp3(quote):
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")
         return False
+    finally:
+        del tts # Explicitly delete the TTS object to clean up
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired

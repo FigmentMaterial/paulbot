@@ -260,8 +260,15 @@ async def on_ready():
 # Function to perform TTS conversion in a separate thread
 def tts_to_mp3(quote):
     try:
-        tts_engine.save_to_file(quote, 'quote.mp3')
-        tts_engine.runAndWait()
+        if os.path.exists('quote.mp3'):
+            logging.warning(f"quote.mp3 file unexpectedly still exists; attempting deletion")
+            os.remote('quote.mp3')
+        else:
+            logging.info("quote.mp3 file does not exist, continuing as expected")
+            tts_engine.save_to_file(quote, 'quote.mp3')
+            tts_engine.runAndWait()
+            if os.path.exists('quote.mp3'):
+                logging.info("Successfully created quote.mp3")
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")
         
@@ -284,18 +291,27 @@ async def read_quotes():
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 future = executor.submit(tts_to_mp3, quote)
                 await asyncio.wrap_future(future)
+            logging.info("TTS conversion completed.")
                         
             # Check if the MP3 file was successfully created
             if os.path.exists('quote.mp3'):
-                logging.info("quote.mp3 successfully created")
+                logging.info("quote.mp3 verified. Continuing...")
             else:
                 logging.error("Failed to create 'quote.mp3'.")
                 return
 
             # Convert MP3 file to WAV
             try:
-                audio = AudioSegment.from_mp3('quote.mp3')
-                audio.export('quote.wav', format='wav')
+                if os.path.exists('quote.mp3'):
+                    logging.info("quote.mp3 found, starting conversion to wav...")
+                    audio = AudioSegment.from_mp3('quote.mp3')
+                    audio.export('quote.wav', format='wav')
+                else:
+                    logging.warning("quote.mp3 not found for wav conversion.")
+                if os.path.exists('quote.wav'):
+                    logging.info("quote.wav successfully created.")
+                else:
+                    logging.error("quote.wav does not exist as expected. Something went wrong.")
             except Exception as e:
                 logging.error(f"Error converting MP3 to WAV: {e}")
                         

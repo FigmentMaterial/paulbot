@@ -4,12 +4,10 @@ import json
 import os
 import logging
 import time
-import pyttsx3
 import re
 import asyncio
-import concurrent.futures
-import threading
 import importlib
+from gtts import gTTS
 from pydub import AudioSegment
 from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler
@@ -30,50 +28,6 @@ def setup_logging():
     
 # Initialize logging
 setup_logging()    
-
-# TTS class for instancing TTS conversions
-class _TTS:
-    def __init__(self):
-        self.engine = self.initialize_engine()
-        
-    def initialize_engine(self):
-        importlib.reload(pyttsx3)   # Workaround to avoid pyttsx3 getting stuck
-        engine = pyttsx3.init()
-        engine.setProperty('rate', 150)
-        logging.info("TTS engine initialized successfully")
-        return engine
-    
-    def start(self, text, filename):
-        if self.engine:
-            try:
-                self.engine.save_to_file(text, filename)
-                self.engine.runAndWait()
-                logging.info(f"TTS conversion to {filename} completed.")
-            except Exception as e:
-                logging.error(f"Error during TTS conversion. Error: {e}")
-        else:
-            logging.error("TTS engine is not initialized.")
-            
-    def cleanup(self):
-        if self.engine:
-            self.engine.stop()
-            #del self.engine
-            logging.info("TTS engine stopped.")
-
-# Initialize TTS engine
-#try:
-    #tts_engine = pyttsx3.init()
-    #tts_engine.setProperty('rate',150)
-    #logging.info("TTS engine initialized successfully.")
-#except ImportError as e:
-    #logging.error(f"ImportError: pyttsx3 module not found. Error: {e}")
-    #tts_engine = None
-#except RuntimeError as e:
-    #logging.error(f"RuntimeError: Failed to initialize the TTS engine. Error: {e}")
-    #tts_engine = None
-#except Exception as e:
-    #logging.error(f"Unexpected error initializing the TTS engine. Error: {e}")
-    #tts_engine = None
 
 # Function to handle file operations with error handling and logging
 def handle_file_operation(file_path, operation_func, *args, **kwargs):
@@ -311,48 +265,16 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
     logging.error(f"Failed to delete {filepath} after {retries} attempts.")
     return False
 
-# Function to perform TTS conversion asynchronously
-#def tts_to_mp3(quote):     
-    #def convert_to_mp3(quote):
-        #try:
-            #logging.info("Attempting to convert quote to .mp3 file...")
-        
-            # Check if the TTS engine is initialized
-            #if tts_engine is None:
-                #logging.error("TTS engine is not initialized.")
-                #return
-        
-            # Perform the TTS conversion
-            #tts_engine.save_to_file(quote, 'quote.mp3')
-            #tts_engine.runAndWait()
-            #logging.info("TTS conversion runAndWait completed.")
-        
-        #except pyttsx3.engine.EngineError as e:
-            #logging.error(f"TTS EngineError: {e}")
-        #except Exception as e:
-            #logging.error(f"Error converting quote to .mp3 file: {e}")
-    
-    #with concurrent.futures.ThreadPoolExecutor() as executor:
-        #future = executor.submit(convert_to_mp3, quote)
-        #future.result(timeout=30)   # Timeout after 30 seconds
-
-# Function to perform TTS conversion using _TTS class
+# Function to perform TTS conversion using gTTS
 def convert_tts_to_mp3(quote):
-    tts = _TTS()
     try:    
-        tts.start(quote, 'quote.mp3')
-        if os.path.exists('quote.mp3'):
-            logging.info("quote.mp3 was created successfully.")
-            time.sleep(1)
-            return True
-        else:
-            logging.error("quote.mp3 was not created.")
-            return False
+        tts = gTTS(text=quote, lang='en')
+        tts.save('quote.mp3')
+        logging.info("quote.mp3 was created successfully.")
+        return True
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")
         return False
-    #finally:
-        #tts.cleanup() # Use a cleanup method to handle TTS object deletion
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired

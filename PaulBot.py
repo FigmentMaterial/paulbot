@@ -278,6 +278,7 @@ async def read_quotes():
         filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
         if filtered_quotes:
             quote = random.choice(filtered_quotes)
+            logging.info(f"Selected quote: {quote}")
             
             # Offload TTS conversion to a separate thread
             with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -311,11 +312,13 @@ async def read_quotes():
             try:
                 source = discord.FFmpegPCMAudio('quote.wav')
                 if not voice_client.is_playing():
+                    logging.info("Starting audio playback.")
                     voice_client.play(source)
                 
                     # Wait for the playback to finish before proceeding
                     while voice_client.is_playing():
                         await asyncio.sleep(1)
+                    logging.info("Finished audio playback.")
             except Exception as e:
                 logging.error(f"Error in audio playback: {e}")
                 
@@ -334,7 +337,7 @@ async def read_quotes():
         logging.warning("No voice clients found. Attempting to reconnect...")
         await reconnect_voice_client()
     
-    logging.info("Completed task to read quotes into TTS.")
+    logging.info("Completed TTS read_quotes task iteration.")
 
 
 async def reconnect_voice_client():

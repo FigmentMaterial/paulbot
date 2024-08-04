@@ -33,6 +33,8 @@ setup_logging()
 
 # TTS class for instancing TTS conversions
 class _TTS:
+    engine = None
+    
     def __init__(self):
         self.engine = self.initialize_engine()
         
@@ -44,12 +46,20 @@ class _TTS:
         return engine
     
     def start(self, text, filename):
-        try:
-            self.engine.save_to_file(text, filename)
-            self.engine.runAndWait()
-            logging.info(f"TTS conversion to {filename} completed.")
-        except Exception as e:
-            logging.error(f"Error during TTS conversion. Error: {e}")
+        if self.engine:
+            try:
+                self.engine.save_to_file(text, filename)
+                self.engine.runAndWait()
+                logging.info(f"TTS conversion to {filename} completed.")
+            except Exception as e:
+                logging.error(f"Error during TTS conversion. Error: {e}")
+        else:
+            logging.error("TTS engine is not initialized.")
+            
+    def __del__(self):
+        if self.engine:
+            del self.engine
+            logging.info("TTS engine object deleted.")
 
 # Initialize TTS engine
 #try:

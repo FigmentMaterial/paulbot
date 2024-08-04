@@ -287,7 +287,7 @@ def tts_to_mp3(quote):
         logging.info("Attempting to convert quote to .mp3 file...")
         tts_engine.save_to_file(quote, 'quote.mp3')
         tts_engine.runAndWait()
-        
+        logging.info("TTS conversion runAndWait completed.")   
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")
         

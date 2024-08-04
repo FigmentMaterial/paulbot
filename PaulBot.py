@@ -240,7 +240,7 @@ async def on_ready():
             for attempt in range (3):   # Retry logic: try 3 times
                 logging.info(f"Connecting to voice... (attempt {attempt + 1})")
                 try:
-                    await channel.connect(timeout=60)   # Timeout set to 60 seconds
+                    await channel.connect()   # Timeout set to 60 seconds
                     logging.info(f"Successfully connected to voice channel: {channel.name}")
                     break
                 except discord.ClientException as e:
@@ -299,7 +299,7 @@ async def reconnect_voice_client():
             guild = bot.get_guild(int(GUILD_ID))
             channel = guild.get_channel(int(VOICE_CHANNEL_ID))
             if guild and channel:
-                await channel.connect(timeout=60)
+                await channel.connect()
                 logging.info(f"Connected to voice channel: {channel.name}")
                 return
             else:

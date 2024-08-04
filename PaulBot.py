@@ -33,8 +33,6 @@ setup_logging()
 
 # TTS class for instancing TTS conversions
 class _TTS:
-    engine = None
-    
     def __init__(self):
         self.engine = self.initialize_engine()
         
@@ -58,6 +56,7 @@ class _TTS:
             
     def __del__(self):
         if self.engine:
+            self.engine.stop()
             del self.engine
             logging.info("TTS engine object deleted.")
 
@@ -344,6 +343,7 @@ def convert_tts_to_mp3(quote):
         tts.start(quote, 'quote.mp3')
         if os.path.exists('quote.mp3'):
             logging.info("quote.mp3 was created successfully.")
+            time.sleep(1)
             return True
         else:
             logging.error("quote.mp3 was not created.")

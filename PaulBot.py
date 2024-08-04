@@ -9,6 +9,7 @@ import re
 import asyncio
 import concurrent.futures
 import threading
+import importlib
 from pydub import AudioSegment
 from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler
@@ -33,24 +34,22 @@ setup_logging()
 # TTS class for instancing TTS conversions
 class _TTS:
     def __init__(self):
-        try:
-            self.engine = pyttsx3.init()
-            self.engine.setProperty('rate', 150)
-            logging.info("TTS engine initialized successfully.")
-        except Exception as e:
-            logging.error(f"Failed to initialize TTS engine. Error: {e}")
-            self.engine = None
-            
+        self.engine = self.initialize_engine()
+        
+    def initialize_engine(self):
+        importlib.reload(pyttsx3)   # Workaround to avoid pyttsx3 getting stuck
+        engine = pyttsx3.init()
+        engine.setProperty('rate', 150)
+        logging.info("TTS engine initialized successfully")
+        return engine
+    
     def start(self, text, filename):
-        if self.engine:
-            try:
-                self.engine.save_to_file(text, filename)
-                self.engine.runAndWait()
-                logging.info(f"TTS conversion to {filename} completed.")
-            except Exception as e:
-                logging.error(f"Error during TTS conversion. Error: {e}")
-        else:
-            logging.error("TTS engine is not initialized.")
+        try:
+            self.engine.save_to_file(text, filename)
+            self.engine.runAndWait()
+            logging.info(f"TTS conversion to {filename} completed.")
+        except Exception as e:
+            logging.error(f"Error during TTS conversion. Error: {e}")
 
 # Initialize TTS engine
 #try:
@@ -330,10 +329,19 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
 
 # Function to perform TTS conversion using _TTS class
 def convert_tts_to_mp3(quote):
+    try:    
         tts = _TTS()
         tts.start(quote, 'quote.mp3')
         del tts
-        return os.path.exists('quote.mp3')
+        if os.path.exists('quote.mp3'):
+            logging.info("quote.mp3 was created successfully.")
+            return True
+        else:
+            logging.error("quote.mp3 was not created.")
+            return False
+    except Exception as e:
+        logging.error(f"Error converting quote to MP3 file: {e}")
+        return False
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired

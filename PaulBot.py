@@ -259,27 +259,35 @@ async def on_ready():
         
     read_quotes.start()
 
+# Helper function to check if a file is in use
+def is_file_in_use(filepath):
+    try:
+        with open(filepath, 'a', os.O_EXCL):
+            return False
+    except IOError:
+        return True
+    
+# Helper function to delete a file with retries - used for temporary audio files
+def delete_file_with_retry(filepath, retries=5, delay=1):
+    for attempt in range(retries):
+        if not is_file_in_use(filepath):
+            try:
+                os.remove(filepath)
+                logging.info(f"{filepath} deleted successfully.")
+                return True
+            except Exception as e:
+                logging.error(f"Attempt {attempt + 1}: Failed to delete {filepath}. Error: {e}")
+        time.sleep(delay)
+    logging.error(f"Failed to delete {filepath} after {retries} attempts.")
+    return False
+
 # Function to perform TTS conversion in a separate thread
 def tts_to_mp3(quote):
     try:
-        if os.path.exists('quote.mp3'):
-            logging.warning("quote.mp3 file still exists from previous run; attempting deletion")
-            try:
-                os.remove('quote.mp3')
-                logging.info("quote.mp3 deleted. Continuing...")
-            except Exception as e:
-                logging.error(f"quote.mp3 file deletion failed prior to TTS generation. {e}")
-                return
- 
         logging.info("Attempting to convert quote to .mp3 file...")
         tts_engine.save_to_file(quote, 'quote.mp3')
         tts_engine.runAndWait()
         
-        # Verify that the MP3 file was created successfuflly.
-        if os.path.exists('quote.mp3'):
-            logging.info("Successfully created quote.mp3")
-        else:
-            logging.error("Failed to create quote.mp3")
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")
         
@@ -303,35 +311,14 @@ async def read_quotes():
                 future = executor.submit(tts_to_mp3, quote)
                 await asyncio.wrap_future(future)
             logging.info("TTS conversion completed.")
-                        
-            # Check if the MP3 file was successfully created
-            if os.path.exists('quote.mp3'):
-                logging.info("quote.mp3 verified. Continuing...")
-            else:
-                logging.error("Failed to create 'quote.mp3'.")
-                return
 
             # Convert MP3 file to WAV
             try:
-                if os.path.exists('quote.mp3'):
-                    logging.info("quote.mp3 found, starting conversion to wav...")
-                    audio = AudioSegment.from_mp3('quote.mp3')
-                    audio.export('quote.wav', format='wav')
-                else:
-                    logging.warning("quote.mp3 not found for wav conversion.")
-                if os.path.exists('quote.wav'):
-                    logging.info("quote.wav successfully created.")
-                else:
-                    logging.error("quote.wav does not exist as expected. Something went wrong.")
+                logging.info("Starting conversion to wav...")
+                audio = AudioSegment.from_mp3('quote.mp3')
+                audio.export('quote.wav', format='wav')
             except Exception as e:
                 logging.error(f"Error converting MP3 to WAV: {e}")
-                        
-            # Check if the WAV file was successfully created
-            if os.path.exists('quote.wav'):
-                logging.info("quote.wav successfully created")
-            else:
-                logging.error("Failed to create 'quote.wav'.")
-                return
 
             # Add a short delay to ensure the file systems recognizes the new file.
             await asyncio.sleep(1)
@@ -353,24 +340,8 @@ async def read_quotes():
                 # Clean up temporary files
                 logging.info("Starting cleanup of temporary files.")
                 try:
-                    if os.path.exists('quote.mp3'):
-                        try:
-                            os.remove('quote.mp3')
-                            if not os.path.exists:
-                                logging.info("Deletion of quote.mp3 successful.")
-                            else:
-                                logging.warning("Deletion of quote.mp3 failed.")
-                        except Exception as e:
-                            logging.error(f"Error deleting quote.mp3: {e}")
-                    if os.path.exists('quote.wav'):
-                        try:
-                            os.remove('quote.wav')
-                            if not os.path.exists:
-                                logging.info("Deletion of quote.wav successful.")
-                            else:
-                                logging.warning("Deletion of quote.wav failed.")
-                        except Exception as e:
-                            logging.error(f"Error deleting quote.wav: {e}")
+                   delete_file_with_retry('quote.mp3')
+                   delete_file_with_retry('quote.wav')
                 except Exception as e:
                     logging.error(f"Error cleaning up audio files: {e}")
         else:

@@ -86,12 +86,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_ID = os.getenv('DISCORD_GUILD_ID')
 VOICE_CHANNEL_ID = os.getenv('VOICE_CHANNEL_ID')
 
-# Log the environment variabls for debugging
-logging.info(f"DISCORD_TOKEN: {TOKEN}")
-logging.info(f"GUILD_ID: {GUILD_ID}")
-logging.info(f"VOICE_CHANNEL_ID: {VOICE_CHANNEL_ID}")
-
-# Check if the token is loaded correctly
+# Check if environment variables are loaded correctly
 if TOKEN is None:
     logging.error("No Discord token found. Please set the DISCORD_TOKEN environment variable.")
     raise ValueError("No Discord token found. Please set the DISCORD_TOKEN environment variable.")
@@ -103,11 +98,12 @@ if VOICE_CHANNEL_ID is None:
     raise ValueError("No Channel ID found. Please set the VOICE_CHANNEL_ID environment variable.")
 
 # Define your intents (Discord security)
-intents = discord.Intents.none()
-intents.messages = True  # Enable message events
-intents.message_content = True  # Enable message content
-intents.reactions = True # Enable reaction events
-intents.guilds = True # Enable server data so the bot can join voice chat
+intents = discord.Intents.all()
+#intents = discord.Intents.none()
+#intents.messages = True  # Enable message events
+#intents.message_content = True  # Enable message content
+#intents.reactions = True # Enable reaction events
+#intents.guilds = True # Enable server data so the bot can join voice chat
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 

@@ -248,7 +248,7 @@ async def on_ready():
                 except discord.ConnectionClosed as e:
                     logging.error(f"ConnectionClosed while connecting to voice: {e}")
                 except asyncio.TimeoutError:
-                    logging.error(f"Timed out connecting to voice on attempt {attempt + 1}")
+                    logging.error(f"Asyncio: Timed out connecting to voice on attempt {attempt + 1}")
                 except Exception as e:
                     logging.error(f"Unexpected error connecting to voice: {e}")
             else:

@@ -351,8 +351,8 @@ def convert_tts_to_mp3(quote):
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")
         return False
-    finally:
-        tts.cleanup() # Use a cleanup method to handle TTS object deletion
+    #finally:
+        #tts.cleanup() # Use a cleanup method to handle TTS object deletion
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired

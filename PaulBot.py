@@ -268,12 +268,25 @@ async def read_quotes():
         filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
         if filtered_quotes:
             quote = random.choice(filtered_quotes)
+            
+            # Generate the MP3 file
             tts_engine.save_to_file(quote, 'quote.mp3')
             tts_engine.runAndWait()
             
+            # Check if the MP3 file was successfully created
+            if not os.path.exists('quote.mp3'):
+                logging.error("Failed to create 'quote.mp3'.")
+                return
+
+            # Convert MP3 file to WAV
             audio = AudioSegment.from_mp3('quote.mp3')
             audio.export('quote.wav', format='wav')
             
+            # Check if the WAV file was successfully created
+            if not os.path.exists('quote.wav'):
+                logging.error("Failed to create 'quote.wav'.")
+                return
+
             source = discord.FFmpegPCMAudio('quote.wav')
             if not voice_client.is_playing():
                 voice_client.play(source)

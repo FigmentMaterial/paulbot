@@ -1,3 +1,4 @@
+from ast import Try
 import discord
 import random
 import json
@@ -270,20 +271,30 @@ async def read_quotes():
             quote = random.choice(filtered_quotes)
             
             # Generate the MP3 file
-            tts_engine.save_to_file(quote, 'quote.mp3')
-            tts_engine.runAndWait()
+            try:
+                tts_engine.save_to_file(quote, 'quote.mp3')
+                tts_engine.runAndWait()
+            except Exception as e:
+                logging.error(f"Error converting quote to MP3 file: {e}")
             
             # Check if the MP3 file was successfully created
-            if not os.path.exists('quote.mp3'):
+            if os.path.exists('quote.mp3'):
+                logging.info("quote.mp3 successfully created")
+            else:
                 logging.error("Failed to create 'quote.mp3'.")
                 return
 
             # Convert MP3 file to WAV
-            audio = AudioSegment.from_mp3('quote.mp3')
-            audio.export('quote.wav', format='wav')
+            try:
+                audio = AudioSegment.from_mp3('quote.mp3')
+                audio.export('quote.wav', format='wav')
+            except Exception as e:
+                logging.error(f"Error converting MP3 to WAV: {e}")
             
             # Check if the WAV file was successfully created
-            if not os.path.exists('quote.wav'):
+            if os.path.exists('quote.wav'):
+                logging.info("quote.wav successfully created")
+            else:
                 logging.error("Failed to create 'quote.wav'.")
                 return
 

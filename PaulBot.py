@@ -4,6 +4,7 @@ import random
 import json
 import os
 import logging
+from discord.enums import try_enum
 import pyttsx3
 import re
 import asyncio
@@ -262,14 +263,23 @@ async def on_ready():
 def tts_to_mp3(quote):
     try:
         if os.path.exists('quote.mp3'):
-            logging.warning(f"quote.mp3 file unexpectedly still exists; attempting deletion")
-            os.remove('quote.mp3')
+            logging.warning("quote.mp3 file still exists from previous run; attempting deletion")
+            try:
+                os.remove('quote.mp3')
+                logging.info("quote.mp3 deleted. Continuing...")
+            except Exception as e:
+                logging.error(f"quote.mp3 file deletion failed prior to TTS generation. {e}")
+                return
+ 
+        logging.info("Attempting to convert quote to .mp3 file...")
+        tts_engine.save_to_file(quote, 'quote.mp3')
+        tts_engine.runAndWait()
+        
+        # Verify that the MP3 file was created successfuflly.
+        if os.path.exists('quote.mp3'):
+            logging.info("Successfully created quote.mp3")
         else:
-            logging.info("quote.mp3 file does not exist, continuing as expected")
-            tts_engine.save_to_file(quote, 'quote.mp3')
-            tts_engine.runAndWait()
-            if os.path.exists('quote.mp3'):
-                logging.info("Successfully created quote.mp3")
+            logging.error("Failed to create quote.mp3")
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")
         

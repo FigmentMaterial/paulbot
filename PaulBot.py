@@ -33,11 +33,23 @@ setup_logging()
 # TTS class for instancing TTS conversions
 class _TTS:
     def __init__(self):
-        self.engine = pyttsx3.init()
-        self.engine.setProperty('rate', 150)
-    def start(self, text_):
-        self.engine.say(text_)
-        self.engine.runAndWait()
+        try:
+            self.engine = pyttsx3.init()
+            self.engine.setProperty('rate', 150)
+            logging.info("TTS engine initialized successfully.")
+        except Exception as e:
+            logging.error(f"Failed to initialize TTS engine. Error: {e}")
+            self.engine = None
+    def start(self, text, filename):
+        if self.engine:
+            try:
+                self.engine.save_to_file(text, filename)
+                self.engine.runAndWait()
+                logging.info(f"TTS conversion to {filename} completed.")
+            except Exception as e:
+                logging.error(f"Error during TTS conversion. Error: {e}")
+        else:
+            logging.error("TTS engine is not initialized.")
 
 # Initialize TTS engine
 #try:
@@ -319,7 +331,11 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
 def convert_tts_to_mp3(quote):
     try:
         tts = _TTS()
-        tts.start(quote)
+        tts.start(quote, 'quote.mp3')
+        if os.path.exists('quote.mp3'):
+            logging.info("quote.mp3 was created successfully.")
+        else:
+            logging.error("quote.mp3 was not created.")
         del tts
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")

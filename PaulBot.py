@@ -262,7 +262,7 @@ def tts_to_mp3(quote):
     try:
         if os.path.exists('quote.mp3'):
             logging.warning(f"quote.mp3 file unexpectedly still exists; attempting deletion")
-            os.remote('quote.mp3')
+            os.remove('quote.mp3')
         else:
             logging.info("quote.mp3 file does not exist, continuing as expected")
             tts_engine.save_to_file(quote, 'quote.mp3')

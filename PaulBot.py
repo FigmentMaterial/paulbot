@@ -1,4 +1,3 @@
-from ast import Try
 import discord
 import random
 import json
@@ -7,6 +6,7 @@ import logging
 import pyttsx3
 import re
 import asyncio
+import concurrent.futures
 from pydub import AudioSegment
 from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler
@@ -256,6 +256,14 @@ async def on_ready():
         logging.error(f"Guild or voice channel not found. Unable to connect.")
         
     read_quotes.start()
+
+# Function to perform TTS conversion in a separate thread
+def tts_to_mp3(quote):
+    try:
+        tts_engine.save_to_file(quote, 'quote.mp3')
+        tts_engine.runAndWait()
+    except Exception as e:
+        logging.error(f"Error converting quote to MP3 file: {e}")
         
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
@@ -270,16 +278,10 @@ async def read_quotes():
         if filtered_quotes:
             quote = random.choice(filtered_quotes)
             
-            # Generate the MP3 file
-            try:
-                # Quick logging info for debugging - Print current working directory and list files
-                logging.info(f"Current working directory: {os.getcwd()}")
-                logging.info(f"Files in the current directory: {os.listdir(os.getcwd())}")
-                # Convert quote to .mp3 file
-                tts_engine.save_to_file(quote, 'quote.mp3')
-                tts_engine.runAndWait()
-            except Exception as e:
-                logging.error(f"Error converting quote to MP3 file: {e}")
+            # Offload TTS conversion to a separate thread
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(tts_to_mp3, quote)
+                await asyncio.wrap_future(future)
                         
             # Check if the MP3 file was successfully created
             if os.path.exists('quote.mp3'):

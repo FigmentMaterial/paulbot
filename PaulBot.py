@@ -1,4 +1,3 @@
-from ast import Try
 import discord
 import random
 import json
@@ -317,6 +316,7 @@ async def read_quotes():
                 logging.info("Starting conversion to wav...")
                 audio = AudioSegment.from_mp3('quote.mp3')
                 audio.export('quote.wav', format='wav')
+                logging.info("Successfully created quote.wav")
             except Exception as e:
                 logging.error(f"Error converting MP3 to WAV: {e}")
 

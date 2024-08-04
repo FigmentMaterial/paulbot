@@ -236,7 +236,7 @@ async def on_ready():
             for attempt in range (3):   # Retry logic: try 3 times
                 logging.info(f"Connecting to voice... (attempt {attempt + 1})")
                 try:
-                    await channel.connect()   # Timeout set to 60 seconds
+                    await channel.connect(timeout=60)   # Timeout set to 60 seconds
                     logging.info(f"Successfully connected to voice channel: {channel.name}")
                     break
                 except discord.ClientException as e:
@@ -254,7 +254,6 @@ async def on_ready():
     else:
         logging.error(f"Guild or voice channel not found. Unable to connect.")
         
-    await reconnect_voice_client()    
     read_quotes.start()
         
 # Task to read quotes at intervals
@@ -287,6 +286,10 @@ async def read_quotes():
             await reconnect_voice_client()
             
 async def reconnect_voice_client():
+    if bot.voice_clients:   # Check if already connected
+        logging.info("Already connected to a voice channel. Reconnection unnecessary.")
+        return
+    
     max_retries = 5
     retry_delay = 10    # seconds
     
@@ -295,7 +298,7 @@ async def reconnect_voice_client():
             guild = bot.get_guild(int(GUILD_ID))
             channel = guild.get_channel(int(VOICE_CHANNEL_ID))
             if guild and channel:
-                await channel.connect()
+                await channel.connect(timeout=60)   # Timeout set to 60 seconds
                 logging.info(f"Connected to voice channel: {channel.name}")
                 return
             else:

@@ -1,9 +1,9 @@
 {
     "paul_commands": {
-        "177902880714522624": 323,
+        "177902880714522624": 324,
         "405099653357502466": 41,
         "466034731784601610": 173,
-        "178020850061017088": 207,
+        "178020850061017088": 214,
         "197947126133555200": 32,
         "241811288332828672": 31,
         "300378168970182657": 20,
@@ -104,7 +104,7 @@
         },
         "Why my my popp be so strong !!": {
             "content": "Why my my popp be so strong !!",
-            "reactions": 1
+            "reactions": 2
         },
         "It's nice to know that once I die. Paulbot will always be here to fill the spot": {
             "content": "It's nice to know that once I die. Paulbot will always be here to fill the spot",
@@ -232,6 +232,26 @@
         },
         "Dude, they know that it's illegal for me to kill them and they do some brazen shit lol": {
             "content": "Dude, they know that it's illegal for me to kill them and they do some brazen shit lol",
+            "reactions": 1
+        },
+        "I was talking to a friend that is still in the biz and he said that if I decided to come back I would only qualify for step dad and cuck movies \ud83d\ude25": {
+            "content": "I was talking to a friend that is still in the biz and he said that if I decided to come back I would only qualify for step dad and cuck movies \ud83d\ude25",
+            "reactions": 1
+        },
+        "I am a chronomancer,  time does not apply to me the way you see it": {
+            "content": "I am a chronomancer,  time does not apply to me the way you see it",
+            "reactions": 1
+        },
+        "Okay, I can jump on in about an hour": {
+            "content": "Okay, I can jump on in about an hour",
+            "reactions": 2
+        },
+        "I'm just asking questions": {
+            "content": "I'm just asking questions",
+            "reactions": 1
+        },
+        "I would suck a barracks full of dicks for 1.0 to come out next month": {
+            "content": "I would suck a barracks full of dicks for 1.0 to come out next month",
             "reactions": 1
         }
     },

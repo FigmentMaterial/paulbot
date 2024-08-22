@@ -3,7 +3,7 @@
         "177902880714522624": 329,
         "405099653357502466": 41,
         "466034731784601610": 178,
-        "178020850061017088": 222,
+        "178020850061017088": 224,
         "197947126133555200": 32,
         "241811288332828672": 31,
         "300378168970182657": 20,
@@ -256,6 +256,14 @@
         },
         "The grift is getting stronger every year": {
             "content": "The grift is getting stronger every year",
+            "reactions": 1
+        },
+        "https://tenor.com/view/izuku-midoriya-my-hero-academy-boku-no-hero-academia-anime-head-bang-gif-15556357": {
+            "content": "https://tenor.com/view/izuku-midoriya-my-hero-academy-boku-no-hero-academia-anime-head-bang-gif-15556357",
+            "reactions": 1
+        },
+        "https://media.discordapp.net/attachments/446214795352342530/1258189635126038618/20240703_151033.mp4?ex=668723e9&is=6685d269&hm=1dd23176541a11eb7be1009bf96395f0b3b551473ae642dfed27ec102aa684fc&": {
+            "content": "https://media.discordapp.net/attachments/446214795352342530/1258189635126038618/20240703_151033.mp4?ex=668723e9&is=6685d269&hm=1dd23176541a11eb7be1009bf96395f0b3b551473ae642dfed27ec102aa684fc&",
             "reactions": 1
         }
     },

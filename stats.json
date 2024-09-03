@@ -1,6 +1,6 @@
 {
     "paul_commands": {
-        "177902880714522624": 337,
+        "177902880714522624": 338,
         "405099653357502466": 41,
         "466034731784601610": 179,
         "178020850061017088": 226,
@@ -277,6 +277,10 @@
         "https://tenor.com/view/praise-god-gif-20411477": {
             "content": "https://tenor.com/view/praise-god-gif-20411477",
             "reactions": 1
+        },
+        "Just going to take a shit then I will be on": {
+            "content": "Just going to take a shit then I will be on",
+            "reactions": 3
         }
     },
     "fetch_completed": true

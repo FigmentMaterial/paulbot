@@ -2,7 +2,7 @@
     "paul_commands": {
         "177902880714522624": 340,
         "405099653357502466": 41,
-        "466034731784601610": 179,
+        "466034731784601610": 180,
         "178020850061017088": 232,
         "197947126133555200": 32,
         "241811288332828672": 31,
@@ -284,7 +284,7 @@
         },
         "Phoenix can officially suck my dick": {
             "content": "Phoenix can officially suck my dick",
-            "reactions": 1
+            "reactions": 2
         }
     },
     "fetch_completed": true

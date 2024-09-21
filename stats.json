@@ -301,6 +301,10 @@
         "I can play in like 20": {
             "content": "I can play in like 20",
             "reactions": 2
+        },
+        "Why do I always buy stupid shit when I'm high": {
+            "content": "Why do I always buy stupid shit when I'm high",
+            "reactions": 1
         }
     },
     "fetch_completed": true

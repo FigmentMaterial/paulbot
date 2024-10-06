@@ -305,6 +305,10 @@
         "Why do I always buy stupid shit when I'm high": {
             "content": "Why do I always buy stupid shit when I'm high",
             "reactions": 1
+        },
+        "#guessillgofuckmyself": {
+            "content": "#guessillgofuckmyself",
+            "reactions": 1
         }
     },
     "fetch_completed": true

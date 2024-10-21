@@ -1,9 +1,9 @@
 {
     "paul_commands": {
-        "177902880714522624": 373,
+        "177902880714522624": 384,
         "405099653357502466": 41,
-        "466034731784601610": 190,
-        "178020850061017088": 279,
+        "466034731784601610": 193,
+        "178020850061017088": 291,
         "197947126133555200": 32,
         "241811288332828672": 31,
         "300378168970182657": 22,
@@ -216,7 +216,7 @@
         },
         "https://tenor.com/view/minion-banana-gif-minion-minions-gif-81650879192259967": {
             "content": "https://tenor.com/view/minion-banana-gif-minion-minions-gif-81650879192259967",
-            "reactions": 1
+            "reactions": 2
         },
         "... gay?": {
             "content": "... gay?",
@@ -264,7 +264,7 @@
         },
         "https://media.discordapp.net/attachments/446214795352342530/1258189635126038618/20240703_151033.mp4?ex=668723e9&is=6685d269&hm=1dd23176541a11eb7be1009bf96395f0b3b551473ae642dfed27ec102aa684fc&": {
             "content": "https://media.discordapp.net/attachments/446214795352342530/1258189635126038618/20240703_151033.mp4?ex=668723e9&is=6685d269&hm=1dd23176541a11eb7be1009bf96395f0b3b551473ae642dfed27ec102aa684fc&",
-            "reactions": 2
+            "reactions": 4
         },
         "https://media.discordapp.net/attachments/446214795352342530/1257423675427131487/fuck_you_half_baked.gif?ex=66845a8e&is=6683090e&hm=74c1d22065fe6561d2b8687f4032dc183a284fff98a3b92fa25f2283130f90b2&=": {
             "content": "https://media.discordapp.net/attachments/446214795352342530/1257423675427131487/fuck_you_half_baked.gif?ex=66845a8e&is=6683090e&hm=74c1d22065fe6561d2b8687f4032dc183a284fff98a3b92fa25f2283130f90b2&=",
@@ -316,7 +316,31 @@
         },
         "Listen, if they can't handle  you at your sluttiest then they don't deserve you": {
             "content": "Listen, if they can't handle  you at your sluttiest then they don't deserve you",
-            "reactions": 2
+            "reactions": 3
+        },
+        "Fucking Ukrainianians . Coming over here and stealing all the jobs": {
+            "content": "Fucking Ukrainianians . Coming over here and stealing all the jobs",
+            "reactions": 1
+        },
+        "30 minutes tops": {
+            "content": "30 minutes tops",
+            "reactions": 1
+        },
+        "just make bread": {
+            "content": "just make bread",
+            "reactions": 1
+        },
+        "That is indeed a nice set of cans": {
+            "content": "That is indeed a nice set of cans",
+            "reactions": 1
+        },
+        "A hog with a hog.": {
+            "content": "A hog with a hog.",
+            "reactions": 1
+        },
+        "The worst part is the long wait as you see": {
+            "content": "The worst part is the long wait as you see",
+            "reactions": 1
         }
     },
     "fetch_completed": true

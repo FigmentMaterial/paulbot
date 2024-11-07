@@ -1,9 +1,9 @@
 {
     "paul_commands": {
-        "177902880714522624": 391,
-        "405099653357502466": 41,
-        "466034731784601610": 193,
-        "178020850061017088": 296,
+        "177902880714522624": 405,
+        "405099653357502466": 43,
+        "466034731784601610": 194,
+        "178020850061017088": 308,
         "197947126133555200": 32,
         "241811288332828672": 31,
         "300378168970182657": 22,
@@ -44,7 +44,7 @@
         },
         "Penis": {
             "content": "Penis",
-            "reactions": 3
+            "reactions": 5
         },
         "#facts": {
             "content": "#facts",
@@ -340,6 +340,18 @@
         },
         "The worst part is the long wait as you see": {
             "content": "The worst part is the long wait as you see",
+            "reactions": 1
+        },
+        "I can play after I binge invincible": {
+            "content": "I can play after I binge invincible",
+            "reactions": 1
+        },
+        "I can play soon, trying to get stuff done real quick": {
+            "content": "I can play soon, trying to get stuff done real quick",
+            "reactions": 1
+        },
+        "YUP!!!": {
+            "content": "YUP!!!",
             "reactions": 1
         }
     },

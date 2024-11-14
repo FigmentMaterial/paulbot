@@ -1,8 +1,8 @@
 {
     "paul_commands": {
-        "177902880714522624": 413,
+        "177902880714522624": 414,
         "405099653357502466": 43,
-        "466034731784601610": 195,
+        "466034731784601610": 196,
         "178020850061017088": 312,
         "197947126133555200": 32,
         "241811288332828672": 31,
@@ -360,6 +360,10 @@
         },
         "I feel like we should rename paulbot to Magic8Paul": {
             "content": "I feel like we should rename paulbot to Magic8Paul",
+            "reactions": 1
+        },
+        "It's a heavy burden but one I am willing to bare": {
+            "content": "It's a heavy burden but one I am willing to bare",
             "reactions": 1
         }
     },

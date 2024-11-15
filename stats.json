@@ -3,7 +3,7 @@
         "177902880714522624": 414,
         "405099653357502466": 43,
         "466034731784601610": 196,
-        "178020850061017088": 313,
+        "178020850061017088": 314,
         "197947126133555200": 32,
         "241811288332828672": 31,
         "300378168970182657": 22,
@@ -364,6 +364,10 @@
         },
         "It's a heavy burden but one I am willing to bare": {
             "content": "It's a heavy burden but one I am willing to bare",
+            "reactions": 1
+        },
+        "https://tenor.com/view/mad-max-road-warrior-humungus-gif-25413105": {
+            "content": "https://tenor.com/view/mad-max-road-warrior-humungus-gif-25413105",
             "reactions": 1
         }
     },

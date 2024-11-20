@@ -1,6 +1,6 @@
 {
     "paul_commands": {
-        "177902880714522624": 419,
+        "177902880714522624": 420,
         "405099653357502466": 43,
         "466034731784601610": 197,
         "178020850061017088": 316,
@@ -372,6 +372,10 @@
         },
         "I am eating chicken , well jump on after I consume": {
             "content": "I am eating chicken , well jump on after I consume",
+            "reactions": 1
+        },
+        "People bite their toenails all time, but it's not cannibalism": {
+            "content": "People bite their toenails all time, but it's not cannibalism",
             "reactions": 1
         }
     },

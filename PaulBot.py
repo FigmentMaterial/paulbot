@@ -1,4 +1,3 @@
-from doctest import NORMALIZE_WHITESPACE
 import discord
 import random
 import json
@@ -8,9 +7,7 @@ import time
 import re
 import asyncio
 from gtts import gTTS
-from gtts.tokenizer import Tokenizer
-from gtts.tokenizer.pre_processors import end_of_line, tone_marks
-# from gtts.tokenizer.symbols import ALL_PUNC, PERIOD_COMMA, COLON, TONE_MARKS, SUB_PAIRS
+from gtts.tokenizer import Tokenizer, pre_processors, tokenizer_cases
 from pydub import AudioSegment
 from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler
@@ -261,24 +258,31 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
     logging.error(f"Failed to delete {filepath} after {retries} attempts.")
     return False
 
-# Define a custom normalize_whitespace function for gTTS tokenizing
+# Preprocess quote for gTTS tokenizing
 def preprocess_text(text):
     try:
-        text = end_of_line(text)    # Applies the end-of-line processing
-        text = tone_marks(text)     # Applies the tone mark adjustments
+        text = pre_processors.end_of_line(text)
+        text = pre_processors.tone_marks(text)
+        text = pre_processors.abbreviations(text)
+        text = pre_processors.word_sub(text)
         text = ' '.join(text.split())   # Normalizes whitespace
         return text
     except Exception as e:
         logging.error(f"Error during pre-processing: {e}")
         return text     # Return the original text if processing fails
     
-# Custom tokenizer function
+# Tokenize the quote
 def tokenize_text (quote):
     try:
         preprocessed_quote = preprocess_text(quote)
         
         # Initialize Tokenizer with symbol rules
-        tokenizer = Tokenizer()
+        tokenizer = Tokenizer([
+            tokenizer_cases.tone_marks,
+            tokenizer_cases.period_comma,
+            tokenizer_cases.colon,
+            tokenizer_cases.other_punctuation
+            ])
 
         # Tokenize the preprocessed text
         tokens = tokenizer.text(preprocessed_quote)

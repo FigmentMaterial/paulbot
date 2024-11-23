@@ -7,6 +7,9 @@ import time
 import re
 import asyncio
 from gtts import gTTS
+from gtts.tokenizer import Tokenizer
+from gtts.tokenizer.pre_processors import pre_processors
+from gtts.tokenizer.symbols import SYMBOLS
 from pydub import AudioSegment
 from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler
@@ -260,9 +263,39 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
 # Function to perform TTS conversion using gTTS
 def convert_tts_to_mp3(quote):
     try:    
-        tts = gTTS(text=quote, lang='en')
-        tts.save('quote.mp3')
+        # Initialize the gTTS tokenizer
+        tokenizer = Tokenizer(pre_processors=pre_processors, symbols=SYMBOLS)
+
+        # gTTS places a limit of 100 characters per TTS
+        # Tokenize the text into manageable chunks
+        tokens = tokenizer.text(quote)
+        logging.info(f"Tokenized quote into {len(tokens)} parts.")
+
+        # Generate and combine audio for each token
+        combined_audio = None
+        for idx, token in enumerate(tokens):
+            logging.info(f"Processing token {idx + 1}/{len(tokens)}: {token}")
+            tts = gTTS(text=token, lang='en')
+            temp_file = f'temp_token_{idx}.mp3'
+            tts.save(temp_file)
+
+            # Load the audio for the current token
+            audio_segment = AudioSegment.from_file(temp_file)
+
+            # Combine with previous audio
+            if combined_audio is None:
+                combined_audio = audio_segment
+            else:
+                combined_audio += audio_segment
+
+            # Clean up temporary file
+            os.remove(temp_file)
+
+        # Save the combined audio
+        combined_audio.export("quote.mp3", format="mp3")
+        logging.info("quote.mp3 was create successfully")
         return True
+        
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")
         return False

@@ -10,7 +10,7 @@ import asyncio
 from gtts import gTTS
 from gtts.tokenizer import Tokenizer
 from gtts.tokenizer.pre_processors import end_of_line, tone_marks
-from gtts.tokenizer.symbols import ALL_PUNC, PERIOD_COMMA, COLON, TONE_MARKS, SUB_PAIRS
+# from gtts.tokenizer.symbols import ALL_PUNC, PERIOD_COMMA, COLON, TONE_MARKS, SUB_PAIRS
 from pydub import AudioSegment
 from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler
@@ -278,7 +278,7 @@ def tokenize_text (quote):
         preprocessed_quote = preprocess_text(quote)
         
         # Initialize Tokenizer with symbol rules
-        tokenizer = Tokenizer(symbols=[ALL_PUNC, PERIOD_COMMA, COLON, TONE_MARKS, SUB_PAIRS])
+        tokenizer = Tokenizer()
 
         # Tokenize the preprocessed text
         tokens = tokenizer.text(preprocessed_quote)

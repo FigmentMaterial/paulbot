@@ -285,7 +285,7 @@ def tokenize_text (quote):
             ])
 
         # Tokenize the preprocessed text
-        tokens = tokenizer.text(preprocessed_quote)
+        tokens = list(tokenizer(preprocessed_quote))
         return tokens
     except Exception as e:
         logging.error(f"Error during tokenization: {e}")

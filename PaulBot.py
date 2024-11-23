@@ -8,8 +8,10 @@ import re
 import asyncio
 from gtts import gTTS
 from gtts.tokenizer import Tokenizer
+from gtts.tokenizer import pre_processors
+from gtts.tokenizer import symbols
 from gtts.tokenizer.pre_processors import end_of_line, tone_marks
-from gtts.tokenizer.symbols import SYMBOLS
+from gtts.tokenizer.symbols import ALL_PUNC, PERIOD_COMMA, COLON, TONE_MARKS, SUB_PAIRS
 from pydub import AudioSegment
 from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler
@@ -264,17 +266,26 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
 def normalize_whitespace(text):
     return ' '.join(text.split())
 
+# Custom tokenizer function
+def tokenize_text (quote):
+    try:
+        # Define tokenization rules using available constants
+        tokenizer = Tokenizer(
+            pre_processors=[normalize_whitespace, end_of_line, tone_marks],
+            symbols=[ALL_PUNC, PERIOD_COMMA, COLON, TONE_MARKS, SUB_PAIRS]
+        )
+        return tokenizer.text(quote)
+    except Exception as e:
+        logging.error(f"Error during tokenization: {e}")
+        return [quote] # Fallback to returning the original text
+
 # Function to perform TTS conversion using gTTS
 def convert_tts_to_mp3(quote):
     try:    
-        # Initialize the gTTS tokenizer
-        tokenizer = Tokenizer(pre_processors=[normalize_whitespace, end_of_line, tone_marks], symbols=SYMBOLS)
-
-        # gTTS places a limit of 100 characters per TTS
-        # Tokenize the text into manageable chunks
-        tokens = tokenizer.text(quote)
-        logging.info(f"Tokenized quote into {len(tokens)} parts.")
-
+        # Tokenize the input text
+        tokens = tokenize_text(quote)
+        logging.info(f"Tokenized text into {len(tokens)} parts.")
+        
         # Generate and combine audio for each token
         combined_audio = None
         for idx, token in enumerate(tokens):

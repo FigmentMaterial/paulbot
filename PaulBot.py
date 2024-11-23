@@ -259,17 +259,17 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
     return False
 
 # Preprocess quote for gTTS tokenizing
-def preprocess_text(text):
+def preprocess_text(quote):
     try:
-        text = pre_processors.end_of_line(text)
-        text = pre_processors.tone_marks(text)
-        text = pre_processors.abbreviations(text)
-        text = pre_processors.word_sub(text)
-        text = ' '.join(text.split())   # Normalizes whitespace
+        text = pre_processors.end_of_line(quote)
+        text = pre_processors.tone_marks(quote)
+        text = pre_processors.abbreviations(quote)
+        text = pre_processors.word_sub(quote)
+        text = ' '.join(quote.split())   # Normalizes whitespace
         return text
     except Exception as e:
         logging.error(f"Error during pre-processing: {e}")
-        return text     # Return the original text if processing fails
+        return quote     # Return the original quote if processing fails
     
 # Tokenize the quote
 def tokenize_text (quote):

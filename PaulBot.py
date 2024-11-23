@@ -8,7 +8,7 @@ import re
 import asyncio
 from gtts import gTTS
 from gtts.tokenizer import Tokenizer
-from gtts.tokenizer.pre_processors import pre_processors
+from gtts.tokenizer.pre_processors import normalize_whitespace, end_of_line
 from gtts.tokenizer.symbols import SYMBOLS
 from pydub import AudioSegment
 from discord.ext import tasks, commands
@@ -264,7 +264,7 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
 def convert_tts_to_mp3(quote):
     try:    
         # Initialize the gTTS tokenizer
-        tokenizer = Tokenizer(pre_processors=pre_processors, symbols=SYMBOLS)
+        tokenizer = Tokenizer(pre_processors=[normalize_whitespace, end_of_line], symbols=SYMBOLS)
 
         # gTTS places a limit of 100 characters per TTS
         # Tokenize the text into manageable chunks

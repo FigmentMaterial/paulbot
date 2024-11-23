@@ -1,3 +1,4 @@
+from doctest import NORMALIZE_WHITESPACE
 import discord
 import random
 import json
@@ -8,8 +9,6 @@ import re
 import asyncio
 from gtts import gTTS
 from gtts.tokenizer import Tokenizer
-from gtts.tokenizer import pre_processors
-from gtts.tokenizer import symbols
 from gtts.tokenizer.pre_processors import end_of_line, tone_marks
 from gtts.tokenizer.symbols import ALL_PUNC, PERIOD_COMMA, COLON, TONE_MARKS, SUB_PAIRS
 from pydub import AudioSegment
@@ -263,18 +262,27 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
     return False
 
 # Define a custom normalize_whitespace function for gTTS tokenizing
-def normalize_whitespace(text):
-    return ' '.join(text.split())
-
+def preprocess_text(text):
+    try:
+        text = end_of_line(text)    # Applies the end-of-line processing
+        text = tone_marks(text)     # Applies the tone mark adjustments
+        text = return ' '.join(text.split())   # Normalizes whitespace
+        return text
+    except Exception as e:
+        logging.error(f"Error during pre-processing: {e}")
+        return text     # Return the original text if processing fails
+    
 # Custom tokenizer function
 def tokenize_text (quote):
     try:
-        # Define tokenization rules using available constants
-        tokenizer = Tokenizer(
-            pre_processors=[normalize_whitespace, end_of_line, tone_marks],
-            symbols=[ALL_PUNC, PERIOD_COMMA, COLON, TONE_MARKS, SUB_PAIRS]
-        )
-        return tokenizer.text(quote)
+        preprocessed_quote = preprocess_text(quote)
+        
+        # Initialize Tokenizer with symbol rules
+        tokenizer = Tokenizer(symbols=[ALL_PUNC, PERIOD_COMMA, COLON, TONE_MARKS, SUB_PAIRS])
+
+        # Tokenize the preprocessed text
+        tokens = tokenizer.text(preprocessed_quote)
+        return tokens
     except Exception as e:
         logging.error(f"Error during tokenization: {e}")
         return [quote] # Fallback to returning the original text
@@ -307,9 +315,13 @@ def convert_tts_to_mp3(quote):
             os.remove(temp_file)
 
         # Save the combined audio
-        combined_audio.export("quote.mp3", format="mp3")
-        logging.info("quote.mp3 was create successfully")
-        return True
+        if combined_audio:
+            combined_audio.export("quote.mp3", format="mp3")
+            logging.info("quote.mp3 was create successfully")
+            return True
+        else:
+            logging.error("No audio was generated for the quote.")
+            return False
         
     except Exception as e:
         logging.error(f"Error converting quote to MP3 file: {e}")

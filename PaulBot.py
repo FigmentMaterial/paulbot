@@ -266,7 +266,7 @@ def preprocess_text(text):
     try:
         text = end_of_line(text)    # Applies the end-of-line processing
         text = tone_marks(text)     # Applies the tone mark adjustments
-        text = return ' '.join(text.split())   # Normalizes whitespace
+        text = ' '.join(text.split())   # Normalizes whitespace
         return text
     except Exception as e:
         logging.error(f"Error during pre-processing: {e}")

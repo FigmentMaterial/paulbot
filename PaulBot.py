@@ -290,9 +290,10 @@ def tokenize_text (quote):
             ])
 
         # Tokenize the preprocessed text
-        tokens = []
-        for token in tokenizer.run(preprocessed_quote):
-            tokens.append(token)
+        tokens = [token.strip() for token in tokenizer.run(preprocessed_quote) if token.strip()]
+        if not tokens:
+            logging.warning("Tokenization resulted in no valid tokens. Falling back to original quote.")
+            tokens = [quote]
         return tokens
     except Exception as e:
         logging.error(f"Error during tokenization: {e}")

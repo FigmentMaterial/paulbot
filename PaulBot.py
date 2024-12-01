@@ -13,6 +13,8 @@ from discord.ext import tasks, commands
 from logging.handlers import RotatingFileHandler
 from functools import wraps
 from dotenv import load_dotenv
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 # Setup a logging function to process error handling throughout the script
 def setup_logging():
@@ -27,7 +29,10 @@ def setup_logging():
     )
     
 # Initialize logging
-setup_logging()    
+setup_logging()
+
+# Initialize ThreadPoolExecutor for offloading TTS work
+executor = ThreadPoolExecutor(max_workers=2)
 
 # Function to handle file operations with error handling and logging
 def handle_file_operation(file_path, operation_func, *args, **kwargs):
@@ -293,8 +298,21 @@ def tokenize_text (quote):
         logging.error(f"Error during tokenization: {e}")
         return [quote] # Fallback to returning the original text
 
+# Async wrapper for convert tts to mp3
+async def async_convert_tts_to_mp3(quote):
+    """Asynchronous wrapper for convert_tts_to_mp3."""
+    loop = asyncio.get_event_loop()
+    try:
+        # Use partial to pass arguments to the synchronous function
+        result = await loop.run_in_executor(executor, partial(convert_tts_to_mp3, quote))
+        return result
+    except Exception as e:
+        logging.error(f"Error in async TTS conversion: {e}")
+        return False
+
 # Function to perform TTS conversion using gTTS
 def convert_tts_to_mp3(quote):
+    """Synchronous TTS conversion to MP3"""
     try:    
         # Tokenize the input text
         tokens = tokenize_text(quote)
@@ -323,7 +341,7 @@ def convert_tts_to_mp3(quote):
         # Save the combined audio
         if combined_audio:
             combined_audio.export("quote.mp3", format="mp3")
-            logging.info("quote.mp3 was create successfully")
+            logging.info("quote.mp3 was created successfully")
             return True
         else:
             logging.error("No audio was generated for the quote.")
@@ -348,7 +366,7 @@ async def read_quotes():
             logging.info(f"Selected quote to read aloud: {quote}")
             
             # Perform TTS conversion to MP3
-            success = convert_tts_to_mp3(quote)
+            success = await async_convert_tts_to_mp3(quote)
             if not success:
                 logging.error("quote.mp3 was not created successfully")
                 return

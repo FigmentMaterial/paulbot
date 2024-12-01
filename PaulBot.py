@@ -289,7 +289,7 @@ def tokenize_text (quote):
             tokenizer_cases.other_punctuation
             ])
 
-        # Tokenize the preprocessed text
+        # Tokenize the preprocessed text, stripping out empty tokens to prevent errors
         tokens = [token.strip() for token in tokenizer.run(preprocessed_quote) if token.strip()]
         if not tokens:
             logging.warning("Tokenization resulted in no valid tokens. Falling back to original quote.")

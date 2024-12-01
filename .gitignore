@@ -15,6 +15,7 @@ test.py
 
 # Log files
 *.log
+*.log.*
 
 # User-specific files
 *.rsuser

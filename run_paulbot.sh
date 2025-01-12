@@ -3,9 +3,9 @@
 # Define variables for convenience
 IMAGE_NAME="paulbot-image"
 CONTAINER_NAME="paulbot"
-ENV_FILE="paulbot.env"
-QUOTES_FILE="quotes.json"
-STATS_FILE="stats.json"
+ENV_FILE="/etc/paulbot/paulbot.env"
+QUOTES_FILE="/etc/paulbot/quotes.json"
+STATS_FILE="/etc/paulbot/stats.json"
 LOG_DIR="/var/log/paulbot"
 
 # Stop and remove existing container (if any)

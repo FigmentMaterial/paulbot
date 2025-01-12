@@ -23,7 +23,7 @@ def setup_logging():
        level=logging.INFO, # Set to INFO for normal operation, change to DEBUG if needed
        format='%(asctime)s - %(levelname)s - %(message)s',
        handlers=[
-           RotatingFileHandler('paulbot.log', maxBytes=1024*1024, backupCount=5),
+           RotatingFileHandler('/app/logs/paulbot.log', maxBytes=1024*1024, backupCount=5),
            logging.StreamHandler()
            ]
     )

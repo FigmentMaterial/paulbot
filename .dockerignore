@@ -1,0 +1,22 @@
+# Ignore all hidden files and folders (.git, .env, etc.)
+.*
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore local logs
+*.log
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore development or editor-specific files
+.vscode/
+.idea/
+
+# Ignore Docker build files themselves
+Dockerfile
+docker-compose.yml

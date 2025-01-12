@@ -13,6 +13,7 @@ docker rm -f $CONTAINER_NAME 2>/dev/null || true
 
 # Run the Docker container
 docker run -d \
+	--restart unless-stoped \
 	--name $CONTAINER_NAME \
 	-v $ENV_FILE:/app/.env \
 	-v $QUOTES_FILE:/app/quotes.json \

@@ -17,6 +17,11 @@ test.py
 *.log
 *.log.*
 
+# Docker images and related Files
+*.tar
+*.img
+*.docker
+
 # User-specific files
 *.rsuser
 *.suo

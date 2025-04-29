@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# WARNING: This script uses GitHub credentials from an environment file.
+# Do NOT use this script in public environments without securing your .env file.
+# Be sure to add your .env file to .gitignore!
+# Consider switching to SSH-based Git instead of embedding credentials in the URL.
+
 # Define paths
 REPO_PATH="/etc/paulbot"
 DOCKER_IMAGE="paulbot-image"

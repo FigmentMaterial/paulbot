@@ -204,7 +204,7 @@ async def on_ready():
     try:
         guild_id = int(GUILD_ID)
         channel_id = int(VOICE_CHANNEL_ID)
-    except:
+    except Exception as e:
         logging.error(f"Error converting IDs to integers: {e}")
         return
     

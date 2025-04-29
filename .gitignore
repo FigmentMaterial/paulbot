@@ -8,6 +8,7 @@ test.py
 
 # Ignore Visual Studio metadata and project settings
 .vs/
+*.pyproj
 
 # Ignore .mp3 and .wav files since they should only be temporary anyway
 *.mp3

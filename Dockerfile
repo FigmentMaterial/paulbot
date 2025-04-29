@@ -19,6 +19,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code and required files
 COPY PaulBot.py .
 
+# Create the logs directory to support file logging
+RUN mkdir -p /app/logs
+
 # Ensure Python output is not buffered (useful for logs)
 ENV PYTHONUNBUFFERED=1
 

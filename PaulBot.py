@@ -18,12 +18,20 @@ from functools import partial
 
 # Setup a logging function to process error handling throughout the script
 def setup_logging():
-    # Configure logging to a file
+    # Load the desired log file path from environment variables (with a default fallback)
+    log_file_path = os.getenv('LOG_FILE_PATH', 'paulbot.log')
+
+    # Ensure the log directory exists, if a path is included
+    log_dir = os.path.dirname(log_file_path)
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    # Configure logging to a file and stream
     logging.basicConfig(
        level=logging.INFO, # Set to INFO for normal operation, change to DEBUG if needed
        format='%(asctime)s - %(levelname)s - %(message)s',
        handlers=[
-           RotatingFileHandler('/app/logs/paulbot.log', maxBytes=1024*1024, backupCount=5),
+           RotatingFileHandler(log_file_path, maxBytes=1024*1024, backupCount=5),
            logging.StreamHandler()
            ]
     )

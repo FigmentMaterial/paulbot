@@ -35,7 +35,7 @@
 - [License](#license)
 
 ---
-test
+
 ## ✨Features
 
 - Add, retrieve, and randomly generate Discord quotes

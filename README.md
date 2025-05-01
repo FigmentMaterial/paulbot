@@ -27,7 +27,7 @@
 
 ---
 
-## ✨ Features
+## ✨Features
 
 - Add, retrieve, and randomly generate Discord quotes
 - Track command usage per user
@@ -38,16 +38,16 @@
 
 ---
 
-## ⚙️ Setup
+## ⚙Setup
 
-### 🧪 Environment
+### 🧪Environment
 
 - **Python:** 3.11+ recommended
 - **Docker:** used for deployment
 - **Linux host:** required
 - **Discord bot token** and **guild ID** from [Discord Developer Portal](https://discord.com/developers/applications)
 
-### 📦 Installation
+### 📦Installation
 
 1. Install Docker (Linux/macOS/Windows):
 
@@ -107,7 +107,7 @@
     ```
 
 
-### 🐳 Running the Bot (Docker)
+### 🐳Running the Bot (Docker)
 
 PaulBot is designed to run as a self-contained Docker container with persistent data and logs handled via bind mounts.
 
@@ -133,7 +133,7 @@ docker logs -f paulbot
 docker build -t paulbot-image .
 ```
 
-#### 🔄 Automating Git Sync (Optional)
+#### 🔄Automating Git Sync (Optional)
 
 The optional `paulbot_sync.sh` script can:
 
@@ -160,11 +160,11 @@ chmod +x /etc/paulbot/paulbot_sync.sh
 ⚠️ Your `.env` file must include GITHUB_USERNAME and GITHUB_TOKEN for sync to work properly.
 
 
-## 🛠️ Configuration
+## 🛠️Configuration
 
 PaulBot relies on both **environment variables** and **bind-mounted files** to function correctly inside its Docker container.
 
-### 🔐 Environment Variables
+### 🔐Environment Variables
 
 These are stored in `/etc/paulbot/paulbot.env`, loaded into the container at runtime. Use the provided `.env.example` file as a reference.
 
@@ -181,7 +181,7 @@ These are stored in `/etc/paulbot/paulbot.env`, loaded into the container at run
 
 ---
 
-### 📁 File Bind Mounts
+### 📁File Bind Mounts
 
 The Docker container uses file bind mounts to ensure that important data — like quotes, stats, logs, and environment variables — is stored outside the container.  
 This makes the data **persistent across container rebuilds or removals**, preserving state and configuration reliably.
@@ -197,7 +197,7 @@ These files must be present on the host and are mounted into the container by th
 
 Ensure all files and the log directory have the correct permissions, as shown in the [Installation](#installation) section.
 
-## 💬 Commands
+## 💬Commands
 
 PaulBot responds to the following text commands, all prefixed with `!` in Discord:
 
@@ -213,11 +213,11 @@ PaulBot responds to the following text commands, all prefixed with `!` in Discor
 Quotes are stored in `quotes.json`, and stats are recorded in `stats.json`.  
 Some commands (like `!fetch`) may require elevated permissions, including access to message history.
 
-## 🗂️ File Structure
+## 🗂️File Structure
 
 PaulBot’s repository is intentionally lightweight. Most files serve either runtime logic, configuration, or persistent data handling. Sensitive and persistent files are **bind-mounted** and excluded from version control.
 
-### 📁 Root Directory Layout
+### 📁Root Directory Layout
 ```
 /etc/paulbot/ 
  ├── PaulBot.py         # Main bot source code
@@ -231,7 +231,7 @@ PaulBot’s repository is intentionally lightweight. Most files serve either run
  └── README.md          # Project documentation
  ```
 
-### 🛑 Ignored at Runtime
+### 🛑Ignored at Runtime
 
 These files are expected to exist at runtime but **should not be committed**:
 
@@ -247,11 +247,11 @@ This is intentional to allow sharing data with a specific friend group.
 If you're running your own fork or a public-facing version, you **should exclude these files** to protect user privacy and reduce potential repo clutter.
 
 
-## 🧾 Logging & Error Handling
+## 🧾Logging & Error Handling
 
 PaulBot logs useful information for debugging, monitoring, and post-mortem analysis. Logs are written to a persistent bind-mounted location inside the container (default: `/app/logs/paulbot.log`).
 
-### 📝 What Gets Logged
+### 📝What Gets Logged
 
 - Bot startup and shutdown events
 - Commands executed by users
@@ -260,7 +260,7 @@ PaulBot logs useful information for debugging, monitoring, and post-mortem analy
 - Discord API errors (e.g., permission issues)
 - Any uncaught exceptions or fatal crashes
 
-### 🔧 Log Location
+### 🔧Log Location
 
 The location is configurable using the `LOG_FILE_PATH` environment variable. If not specified, it defaults to:
 `/app/logs/paulbot.log`
@@ -270,18 +270,18 @@ This path is bind-mounted from the host machine, typically:
 
 Ensure this directory exists on the host and is writable by the container, as shown in the [Installation](#installation) section.
 
-### ❌ Fallback Behavior
+### ❌Fallback Behavior
 
 If the log path is invalid or unwritable, the bot falls back to writing logs to `paulbot.log` in the container's current working directory. This fallback is **not persistent** and will be lost when the container is removed.
 
 Tip: Use `docker logs -f paulbot` to tail logs directly if needed.
 
 
-## 👩‍💻 Development & Contribution
+## 👩‍💻Development & Contribution
 
 PaulBot is a private, personal project — but if you’re a friend, contributor, or curious developer, feel free to poke around.
 
-### 🧱 Local Development
+### 🧱Local Development
 
 Although the bot is designed to run in Docker, you can run it locally for testing:
 
@@ -312,7 +312,7 @@ Logs will still be written to the path defined by `LOG_FILE_PATH`, which should 
 
 ---
 
-### 🛠️ Contributing Code
+### 🛠️Contributing Code
 
 PaulBot isn’t intended for public use, but contributions or pull requests from friends are welcome. If you want to add features or improve the codebase:
 
@@ -325,12 +325,12 @@ Note: Don’t commit `.env`, token files, personal data, or secrets. Use `.env.e
 
 ---
 
-### 🧪 Testing
+### 🧪Testing
 
 There are no formal tests at the moment. You break it, you fix it. 😎
 
 
-## 🔐 Security Disclaimer
+## 🔐Security Disclaimer
 
 PaulBot is built for private use among friends and is not intended for public deployment. That said, there are a few important notes:
 
@@ -345,7 +345,7 @@ PaulBot is built for private use among friends and is not intended for public de
 > ⚠️ **Reminder:** Discord bots run with elevated privileges on your server. Always keep your tokens secret and scope permissions appropriately.
 
 
-## 📜 License
+## 📜License
 
 This project is licensed under the **MIT License**.
 

@@ -9,6 +9,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	ffmpeg \
 	libffi-dev \
+	procps \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Copy the Python dependencies file and install dependencies

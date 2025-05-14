@@ -1,9 +1,9 @@
 {
     "paul_commands": {
-        "177902880714522624": 579,
-        "405099653357502466": 51,
-        "466034731784601610": 223,
-        "178020850061017088": 379,
+        "177902880714522624": 592,
+        "405099653357502466": 54,
+        "466034731784601610": 224,
+        "178020850061017088": 394,
         "197947126133555200": 34,
         "241811288332828672": 33,
         "300378168970182657": 22,
@@ -44,7 +44,7 @@
         },
         "Penis": {
             "content": "Penis",
-            "reactions": 5
+            "reactions": 7
         },
         "#facts": {
             "content": "#facts",
@@ -76,7 +76,7 @@
         },
         "I cum": {
             "content": "I cum",
-            "reactions": 2
+            "reactions": 4
         },
         "That's no abomination... but this is": {
             "content": "That's no abomination... but this is",
@@ -212,7 +212,7 @@
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1253597660959608842/image0.gif?ex=66766f4d&is=66751dcd&hm=3ac99cc5472ed6a7dd2939e3eebccbd9846932955d12ed56acd5cac164ac0459&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1253597660959608842/image0.gif?ex=66766f4d&is=66751dcd&hm=3ac99cc5472ed6a7dd2939e3eebccbd9846932955d12ed56acd5cac164ac0459&",
-            "reactions": 5
+            "reactions": 6
         },
         "https://tenor.com/view/minion-banana-gif-minion-minions-gif-81650879192259967": {
             "content": "https://tenor.com/view/minion-banana-gif-minion-minions-gif-81650879192259967",
@@ -517,6 +517,34 @@
         "https://tenor.com/view/why-are-you-booing-me-im-right-gif-10368876": {
             "content": "https://tenor.com/view/why-are-you-booing-me-im-right-gif-10368876",
             "reactions": 2
+        },
+        "How do trees connect to the internet? They log on.": {
+            "content": "How do trees connect to the internet? They log on.",
+            "reactions": 1
+        },
+        "Okay. Guess I'll just go fuck myself": {
+            "content": "Okay. Guess I'll just go fuck myself",
+            "reactions": 2
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1296677933175275582/20241017_203436.jpg?ex=671328ee&is=6711d76e&hm=535b5cebc9b3b28531fba945a4ae8b884d9dcb90fb7623f1b6827f91fbfee68b&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1296677933175275582/20241017_203436.jpg?ex=671328ee&is=6711d76e&hm=535b5cebc9b3b28531fba945a4ae8b884d9dcb90fb7623f1b6827f91fbfee68b&",
+            "reactions": 1
+        },
+        "I love it here": {
+            "content": "I love it here",
+            "reactions": 2
+        },
+        "That person is an idiot lol": {
+            "content": "That person is an idiot lol",
+            "reactions": 2
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1294061854636773427/Screenshot_20241010_151907_Instagram.jpg?ex=6709a484&is=67085304&hm=d9d6e97d4451e37b1933ce36d5d6d8b499e69fa6126c6b58744ea6eb680816d1&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1294061854636773427/Screenshot_20241010_151907_Instagram.jpg?ex=6709a484&is=67085304&hm=d9d6e97d4451e37b1933ce36d5d6d8b499e69fa6126c6b58744ea6eb680816d1&",
+            "reactions": 2
+        },
+        "I could eat that shitter like an apple fritter": {
+            "content": "I could eat that shitter like an apple fritter",
+            "reactions": 1
         }
     },
     "fetch_completed": true

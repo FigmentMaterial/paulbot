@@ -6,6 +6,7 @@ import logging
 import time
 import re
 import asyncio
+import sys
 from gtts import gTTS
 from gtts.tokenizer import Tokenizer, pre_processors, tokenizer_cases
 from pydub import AudioSegment
@@ -19,21 +20,46 @@ from functools import partial
 # Setup a logging function to process error handling throughout the script
 def setup_logging():
     # Load the desired log file path from environment variables (with a default fallback)
-    log_file_path = os.getenv('LOG_FILE_PATH', 'paulbot.log')
+    log_file_path = os.getenv('LOG_FILE_PATH', '/app/logs/paulbot.log')
+    log_level_str = os.getenv('LOG_LEVEL', 'INFO').upper()
+    level = getattr(logging, log_level_str, logging.INFO)
 
-    # Ensure the log directory exists, if a path is included
+    # Ensure the log directory exists, fall back safely if not writable
     log_dir = os.path.dirname(log_file_path)
-    if log_dir and not os.path.exists(log_dir):
-        os.makedirs(log_dir)
+    if log_dir:
+        try:
+            os.makedirs(log_dir, exist_ok=True)
+        except Exception as e:
+            fallback = 'paulbot.log'
+            print(
+                f"[setup_logging] WARNING: could not create '{log_dir}': {e}. "
+                f"Falling back to '{fallback}'",
+                file=sys.stderr
+            )
+            log_file_path = fallback
 
-    # Configure logging to a file and stream
-    logging.basicConfig(
-       level=logging.INFO, # Set to INFO for normal operation, change to DEBUG if needed
-       format='%(asctime)s - %(levelname)s - %(message)s',
-       handlers=[
-           RotatingFileHandler(log_file_path, maxBytes=1024*1024, backupCount=5),
-           logging.StreamHandler()
-           ]
+    fmt = '%(asctime)s %(levelname)s %(name)s [%(process)d] %(message)s'
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+
+    file_handler = RotatingFileHandler(log_file_path, maxBytes=10_000_000, backupCount=5, encoding='utf-8')
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(level)
+
+    stream_handler = logging.StreamHandler(sys.stdout)  # stdout is for visibility in 'docker logs'
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(level)
+
+    # Force reconfigure root logger even if something configured it earlier
+    logging.basicConfig(level=level, handlers=[file_handler, stream_handler], force=True)
+
+    # Set reasonable defaults for noisy libraries
+    logging.getLogger('discord').setLevel(logging.INFO)
+    logging.getLogger('websockets').setLevel(logging.WARNING)
+
+    logging.getLogger(__name__).info(
+        "Logging initialized level=%s file=%s (stdout + rotating file)",
+        log_level_str, log_file_path
     )
     
 # Initialize logging
@@ -46,7 +72,7 @@ executor = ThreadPoolExecutor(max_workers=2)
 def handle_file_operation(file_path, operation_func, *args, **kwargs):
     try:
         return operation_func(file_path, *args, **kwargs)
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         logging.error(f"FileNotFoundError: File '{file_path}' not found. Error: {e}.")
         return None
     except json.JSONDecodeError as e:

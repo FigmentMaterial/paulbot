@@ -6,6 +6,7 @@ import logging
 import time
 import re
 import asyncio
+import sys
 from gtts import gTTS
 from gtts.tokenizer import Tokenizer, pre_processors, tokenizer_cases
 from pydub import AudioSegment
@@ -19,21 +20,46 @@ from functools import partial
 # Setup a logging function to process error handling throughout the script
 def setup_logging():
     # Load the desired log file path from environment variables (with a default fallback)
-    log_file_path = os.getenv('LOG_FILE_PATH', 'paulbot.log')
+    log_file_path = os.getenv('LOG_FILE_PATH', '/app/logs/paulbot.log')
+    log_level_str = os.getenv('LOG_LEVEL', 'INFO').upper()
+    level = getattr(logging, log_level_str, logging.INFO)
 
-    # Ensure the log directory exists, if a path is included
+    # Ensure the log directory exists, fall back safely if not writable
     log_dir = os.path.dirname(log_file_path)
-    if log_dir and not os.path.exists(log_dir):
-        os.makedirs(log_dir)
+    if log_dir:
+        try:
+            os.makedirs(log_dir, exist_ok=True)
+        except Exception as e:
+            fallback = 'paulbot.log'
+            print(
+                f"[setup_logging] WARNING: could not create '{log_dir}': {e}. "
+                f"Falling back to '{fallback}'",
+                file=sys.stderr
+            )
+            log_file_path = fallback
 
-    # Configure logging to a file and stream
-    logging.basicConfig(
-       level=logging.INFO, # Set to INFO for normal operation, change to DEBUG if needed
-       format='%(asctime)s - %(levelname)s - %(message)s',
-       handlers=[
-           RotatingFileHandler(log_file_path, maxBytes=1024*1024, backupCount=5),
-           logging.StreamHandler()
-           ]
+    fmt = '%(asctime)s %(levelname)s %(name)s [%(process)d] %(message)s'
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+
+    file_handler = RotatingFileHandler(log_file_path, maxBytes=10_000_000, backupCount=5, encoding='utf-8')
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(level)
+
+    stream_handler = logging.StreamHandler(sys.stdout)  # stdout is for visibility in 'docker logs'
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(level)
+
+    # Force reconfigure root logger even if something configured it earlier
+    logging.basicConfig(level=level, handlers=[file_handler, stream_handler], force=True)
+
+    # Set reasonable defaults for noisy libraries
+    logging.getLogger('discord').setLevel(logging.INFO)
+    logging.getLogger('websockets').setLevel(logging.WARNING)
+
+    logging.getLogger(__name__).info(
+        "Logging initialized level=%s file=%s (stdout + rotating file)",
+        log_level_str, log_file_path
     )
     
 # Initialize logging
@@ -46,17 +72,17 @@ executor = ThreadPoolExecutor(max_workers=2)
 def handle_file_operation(file_path, operation_func, *args, **kwargs):
     try:
         return operation_func(file_path, *args, **kwargs)
-    except FileNotFoundError:
-        logging.error(f"FileNotFoundError: File '{file_path}' not found. Error: {e}.")
+    except FileNotFoundError as e:
+        logging.exception(f"FileNotFoundError: File '{file_path}' not found. Error: {e}.")
         return None
     except json.JSONDecodeError as e:
-        logging.error(f"JSONDecodeError: Failed to decode JSON in '{file_path}'. Error: {e}. Validate that file is not empty and is formatted in JSON.")
+        logging.exception(f"JSONDecodeError: Failed to decode JSON in '{file_path}'. Error: {e}. Validate that file is not empty and is formatted in JSON.")
         return None
     except OSError as e:
-        logging.error(f"OSError: Failed to perform operation on '{file_path}'. Error: {e}.")
+        logging.exception(f"OSError: Failed to perform operation on '{file_path}'. Error: {e}.")
         return None
     except Exception as e:
-        logging.error(f"Unexpected error during file operation on '{file_path}'. Error: {e}.")
+        logging.exception(f"Unexpected error during file operation on '{file_path}'. Error: {e}.")
         return None
     
 # Helper function to check if a string contains a URL
@@ -71,13 +97,13 @@ def discord_exception_handler(func):
         try:
             return await func(*args, **kwargs)
         except discord.HTTPException as e:
-            logging.error(f"HTTPException in {func.__name__}: {e}")
+            logging.exception(f"HTTPException in {func.__name__}: {e}")
         except discord.Forbidden as e:
-            logging.error(f"Forbidden in {func.__name__}: {e}")
+            logging.exception(f"Forbidden in {func.__name__}: {e}")
         except discord.NotFound as e:
-            logging.error(f"NotFound in {func.__name__}: {e}")
+            logging.exception(f"NotFound in {func.__name__}: {e}")
         except Exception as e:
-            logging.error(f"Unexpected error in {func.__name__}: {e}")
+            logging.exception(f"Unexpected error in {func.__name__}: {e}")
     return wrapper
 
 # Load environment variables for Discord token
@@ -142,9 +168,9 @@ def add_quote(quote):
         quotes.append(quote)
         save_quotes(quotes)
     except AttributeError as e:
-        logging.error(f"AttributeError: Failed to add quote '{quote}' to '{quotes_file}'. Error: {e}.")
+        logging.exception(f"AttributeError: Failed to add quote '{quote}' to '{quotes_file}'. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexpected error adding quote '{quote}' to '{quotes_file}'. Error: {e}")
+        logging.exception(f"Unexpected error adding quote '{quote}' to '{quotes_file}'. Error: {e}")
 
 quotes = load_quotes()  # Load existing quotes from file
 stats = load_stats()    # Load existing stats from file
@@ -166,11 +192,11 @@ async def fetch_message_stats(channel):
                 stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
                 save_stats(stats)   # Save updated stats here
             except KeyError as e:
-                logging.error(f"KeyError updating paul_commands for user: {user_id} during !fetch process. Error: {e}")
+                logging.exception(f"KeyError updating paul_commands for user: {user_id} during !fetch process. Error: {e}")
             except OSError as e:
-                logging.error(f"OSError saving stats while tracking !paul usage for user '{user_id}' during !fetch process. Error: {e}")
+                logging.exception(f"OSError saving stats while tracking !paul usage for user '{user_id}' during !fetch process. Error: {e}")
             except Exception as e:
-                logging.error(f"Unexpected error while tracking !paul usage for user '{user_id}' during !fetch process. Error: {e}")
+                logging.exception(f"Unexpected error while tracking !paul usage for user '{user_id}' during !fetch process. Error: {e}")
             continue    #Skip further processing for non-PaulBot messages
             
         # Track reactions to quotes
@@ -188,11 +214,11 @@ async def fetch_message_stats(channel):
                                 stats["quote_reactions"][quote] = {"content": quote, "reactions": reactions_count}
                             save_stats(stats)  # Save updated stats here
                     except KeyError as e:
-                        logging.error(f"KeyError updating quote_reactions for quote {quote} during !fetch process. Error: {e}")
+                        logging.exception(f"KeyError updating quote_reactions for quote {quote} during !fetch process. Error: {e}")
                     except OSError as e:
-                        logging.error(f"OSError saving stats while tracking reactions for quote {quote} during !fetch process. Error: {e}")
+                        logging.exception(f"OSError saving stats while tracking reactions for quote {quote} during !fetch process. Error: {e}")
                     except Exception as e:
-                        logging.error(f"Unexpected error while tracking reactions for quote {quote} during !fetch process. Error: {e}")
+                        logging.exception(f"Unexpected error while tracking reactions for quote {quote} during !fetch process. Error: {e}")
         
     # Set the fetch_completed flag to True after processing
     stats["fetch_completed"] = True
@@ -213,7 +239,7 @@ async def on_ready():
         guild_id = int(GUILD_ID)
         channel_id = int(VOICE_CHANNEL_ID)
     except Exception as e:
-        logging.error(f"Error converting IDs to integers: {e}")
+        logging.exception(f"Error converting IDs to integers: {e}")
         return
     
     # Join the voice channel specified in the environment variables
@@ -234,13 +260,13 @@ async def on_ready():
                     await channel.connect(timeout=60)   # Timeout set to 60 seconds
                     break
                 except discord.ClientException as e:
-                    logging.error(f"ClientException while connecting to voice: {e}")
+                    logging.exception(f"ClientException while connecting to voice: {e}")
                 except discord.ConnectionClosed as e:
-                    logging.error(f"ConnectionClosed while connecting to voice: {e}")
+                    logging.exception(f"ConnectionClosed while connecting to voice: {e}")
                 except asyncio.TimeoutError:
-                    logging.error(f"Asyncio: Timed out connecting to voice on attempt {attempt + 1}")
+                    logging.warning(f"Asyncio: Timed out connecting to voice on attempt {attempt + 1}")
                 except Exception as e:
-                    logging.error(f"Unexpected error connecting to voice: {e}")
+                    logging.exception(f"Unexpected error connecting to voice: {e}")
             else:
                 logging.error("Failed to connect to voice channel after 3 attempts.")
         else:
@@ -266,7 +292,7 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
                 os.remove(filepath)
                 return True
             except Exception as e:
-                logging.error(f"Attempt {attempt + 1}: Failed to delete {filepath}. Error: {e}")
+                logging.exception(f"Attempt {attempt + 1}: Failed to delete {filepath}. Error: {e}")
         time.sleep(delay)
     logging.error(f"Failed to delete {filepath} after {retries} attempts.")
     return False
@@ -281,7 +307,7 @@ def preprocess_text(quote):
         text = ' '.join(quote.split())   # Normalizes whitespace
         return text
     except Exception as e:
-        logging.error(f"Error during pre-processing: {e}")
+        logging.exception(f"Error during pre-processing: {e}")
         return quote     # Return the original quote if processing fails
     
 # Tokenize the quote
@@ -304,7 +330,7 @@ def tokenize_text (quote):
             tokens = [quote]
         return tokens
     except Exception as e:
-        logging.error(f"Error during tokenization: {e}")
+        logging.exception(f"Error during tokenization: {e}")
         return [quote] # Fallback to returning the original text
 
 # Async wrapper for convert tts to mp3
@@ -357,7 +383,7 @@ def convert_tts_to_mp3(quote):
             return False
         
     except Exception as e:
-        logging.error(f"Error converting quote to MP3 file: {e}")
+        logging.exception(f"Error converting quote to MP3 file: {e}")
         return False
         
 # Task to read quotes at intervals
@@ -385,7 +411,7 @@ async def read_quotes():
                 audio = AudioSegment.from_mp3('quote.mp3')
                 audio.export('quote.wav', format='wav')
             except Exception as e:
-                logging.error(f"Error converting MP3 to WAV: {e}")
+                logging.exception(f"Error converting MP3 to WAV: {e}")
 
             # Add a short delay to ensure the file systems recognizes the new file.
             await asyncio.sleep(1)
@@ -399,7 +425,7 @@ async def read_quotes():
                     while voice_client.is_playing():
                         await asyncio.sleep(1)
             except Exception as e:
-                logging.error(f"Error in audio playback: {e}")
+                logging.exception(f"Error in audio playback: {e}")
                 
             finally:
                 # Clean up temporary files
@@ -407,7 +433,7 @@ async def read_quotes():
                    delete_file_with_retry('quote.mp3')
                    delete_file_with_retry('quote.wav')
                 except Exception as e:
-                    logging.error(f"Error cleaning up audio files: {e}")
+                    logging.exception(f"Error cleaning up audio files: {e}")
         else:
             logging.warning("No quotes available for playback.")
     else:
@@ -436,7 +462,7 @@ async def reconnect_voice_client():
         except asyncio.TimeoutError:
             logging.warning(f"Timeout while connecting to voice (attempt {attempt}/{max_retries}). Retrying in {retry_delay} seconds...")
         except Exception as e:
-            logging.error(f"Error during connection attempt {attempt}/{max_retries}: {e}")
+            logging.exception(f"Error during connection attempt {attempt}/{max_retries}: {e}")
         
         await asyncio.sleep(retry_delay)
     logging.error("Failed to connect to voice channel after multiple attempts.")
@@ -466,33 +492,33 @@ async def on_message(message):
                 add_quote(quote)
                 await message.channel.send('Quote added!')
             except IOError as e:
-                logging.error(f"IOError while adding quote: {quote}. Error: {e}")
+                logging.exception(f"IOError while adding quote: {quote}. Error: {e}")
                 await message.channel.send('Failed to add quote due to a file error.')
             except Exception as e:
-                logging.error(f"Unexpected error while adding quote: {quote}. Error: {e}")
+                logging.exception(f"Unexpected error while adding quote: {quote}. Error: {e}")
                 await message.channel.send('Failed to add quote due to an unexpected error.')
         else:
             await message.channel.send('Please provide a quote.')
 
-    # Generate and sent a random quote to the Discord channel
+    # Generate and send a random quote to the Discord channel
     elif '!paul' in content:
         user_id = str(message.author.id)
         try:
             stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
             save_stats(stats)   # Save updated stats here
         except KeyError as e:
-            logging.error(f"KeyError updating stats for user: {user_id} during !paul command processing. Error: {e}")
+            logging.exception(f"KeyError updating stats for user: {user_id} during !paul command processing. Error: {e}")
         except OSError as e:
-            logging.error(f"OSError saving stats for user: {user_id} during !paul command processing. Error: {e}")
+            logging.exception(f"OSError saving stats for user: {user_id} during !paul command processing. Error: {e}")
         except Exception as e:
-            logging.error(f"Unexpected error updating stats for user: {user_id} during !paul command processing. Error: {e}")
+            logging.exception(f"Unexpected error updating stats for user: {user_id} during !paul command processing. Error: {e}")
     
         if quotes:
             try:
                 random_quote = random.choice(quotes)
                 sent_message = await message.channel.send(random_quote)
             except Exception as e:
-                logging.error(f"Unexpected error sending random quote: {e}")
+                logging.exception(f"Unexpected error sending random quote: {e}")
                 await message.channel.send('Failed to send random quote due to an unexpected error.')
         else:
             await message.channel.send('No quotes available.')
@@ -533,23 +559,23 @@ async def on_message(message):
             embed.set_footer(text="Stats provided by PaulBot, about PaulBot, for you. He's a filthy self-reporter.")
             await message.channel.send(embed=embed)
         except KeyError as e:
-            logging.error(f"KeyError accessing stats: {e}")
+            logging.exception(f"KeyError accessing stats: {e}")
             await message.channel.send('Failed to retrieve stats due to a KeyError.')
         except discord.NotFound as e:
-            logging.error(f"User not found while fetching stats: {e}")
+            logging.exception(f"User not found while fetching stats: {e}")
             await message.channel.send('Failed to retrieve user for stats: User Not Found.')
         except discord.HTTPException as e:
-            logging.error(f"HTTPException while fetching stats: {e}")
+            logging.exception(f"HTTPException while fetching stats: {e}")
             await message.channel.send('Failed to retrieve stats due to an HTTP error.')
         except Exception as e:
-            logging.error(f"Unexpected error retrieving stats: {e}")
+            logging.exception(f"Unexpected error retrieving stats: {e}")
             await message.channel.send('Failed to retrieve stats due to an unexpected error.')
     # Fetch message statistics retroactively
     elif '!fetch' in content:
         try:
             await fetch_message_stats(message.channel)
         except Exception as e:
-            logging.error(f"Error fetching message stats for channel: {message.channel.id}. Error: {e}")
+            logging.exception(f"Error fetching message stats for channel: {message.channel.id}. Error: {e}")
             await message.channel.send('Failed to fetch message stats.')
         
     # Display a list of available commands to the end user in Discord
@@ -577,7 +603,7 @@ async def on_message(message):
             # Send the help message to the channel
             await message.channel.send(help_message)
         except Exception as e:
-            logging.error(f"Unexpected error sending help message: {e}.")
+            logging.exception(f"Unexpected error sending help message: {e}.")
             await message.channel.send('Failed to send help message due to an unexpected error.')
 
 # Collect reaction statistics
@@ -600,17 +626,17 @@ async def on_reaction_add(reaction, user):
                     save_stats(stats) # Save stats here
                     break   # Stop checking quotes once a match is found
     except discord.HTTPException as e:
-        logging.error(f"HTTPException: Error processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"HTTPException: Error processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except discord.Forbidden as e:
-        logging.error(f"Forbidden: Insufficient permissions to process reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"Forbidden: Insufficient permissions to process reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except KeyError as e:
-        logging.error(f"KeyError: Attempted to access a non-existent key while processing reaction addition for message ID {message.id} by user ID {user.id}. Key: {e}.")
+        logging.exception(f"KeyError: Attempted to access a non-existent key while processing reaction addition for message ID {message.id} by user ID {user.id}. Key: {e}.")
     except TypeError as e:
-        logging.error(f"TypeError: Encountered a type error while processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"TypeError: Encountered a type error while processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except OSError as e:
-        logging.error(f"OSError: Failed to save stats while processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"OSError: Failed to save stats while processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexpected error processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"Unexpected error processing reaction addition for message ID {message.id} by user ID {user.id}. Error: {e}.")
         
 # Remove reaction statistics
 @bot.event
@@ -632,31 +658,31 @@ async def on_reaction_remove(reaction, user):
                         save_stats(stats)   #Save stats here
                     break   # Stop checking quotes once a match is found
     except discord.HTTPException as e:
-        logging.error(f"HTTPException: Error processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"HTTPException: Error processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except discord.Forbidden as e:
-        logging.error(f"Forbidden: Insufficient permissions to process reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"Forbidden: Insufficient permissions to process reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except KeyError as e:
-        logging.error(f"KeyError: Attempted to access a non-existent key while processing reaction removal for message ID {message.id} by user ID {user.id}. Key: {e}.")
+        logging.exception(f"KeyError: Attempted to access a non-existent key while processing reaction removal for message ID {message.id} by user ID {user.id}. Key: {e}.")
     except TypeError as e:
-        logging.error(f"TypeError: Encountered a type error while processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"TypeError: Encountered a type error while processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except OSError as e:
-        logging.error(f"OSError: Failed to save stats while processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"OSError: Failed to save stats while processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexpected error processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
+        logging.exception(f"Unexpected error processing reaction removal for message ID {message.id} by user ID {user.id}. Error: {e}.")
 
 # Run the Discord bot with the loaded token
 if __name__ == "__main__":      # Ensure that bot is being run directly instead of inside another script  
     try:        
         bot.run(TOKEN)
     except discord.LoginFailure as e:
-        logging.error(f"LoginFailure: Invalid Discord token provided. Error: {e}.")
+        logging.exception(f"LoginFailure: Invalid Discord token provided. Error: {e}.")
     except discord.PrivilegedIntentsRequired as e:
-        logging.error(f"PrivilegedIntentsRequired: Missing required privileged intents. Enable them in the Discord Developer Portal. Error: {e}.")
+        logging.exception(f"PrivilegedIntentsRequired: Missing required privileged intents. Enable them in the Discord Developer Portal. Error: {e}.")
     except discord.HTTPException as e:
-        logging.error(f"HTTPException: HTTP request to Discord API failed. Error: {e}.")
+        logging.exception(f"HTTPException: HTTP request to Discord API failed. Error: {e}.")
     except discord.GatewayNotFound as e:
-        logging.error(f"GatewayNotFound: Discord gateway was not found. Error: {e}.")
+        logging.exception(f"GatewayNotFound: Discord gateway was not found. Error: {e}.")
     except discord.ConnectionClosed as e:
-        logging.error(f"ConnectionClosed: Connection to Discord closed unexpectedly. Error code: {e.code}. Error: {e}.")
+        logging.exception(f"ConnectionClosed: Connection to Discord closed unexpectedly. Error code: {e.code}. Error: {e}.")
     except Exception as e:
-        logging.error(f"Unexpected error during bot run. Error: {e}.")
+        logging.exception(f"Unexpected error during bot run. Error: {e}.")

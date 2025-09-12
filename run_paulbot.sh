@@ -35,4 +35,6 @@ docker run -d \
 	-v $QUOTES_FILE:/app/quotes.json \
 	-v $STATS_FILE:/app/stats.json \
 	-v $LOG_DIR:/app/logs \
+	-v /etc/localtime:/etc/localtime:ro \
+	-v /etc/timezone:/etc/timezone:ro \
 	$IMAGE_NAME

@@ -14,8 +14,8 @@ STATS_FILE="/etc/paulbot/stats.json"
 LOG_DIR="/var/log/paulbot"
 
 # Per-container Docker log rotation
-LOG_MAX_SIZE="${LOG_MAX_SIZE=-50m}"
-LOG_MAX_FILE="${LOG_MAX_FILE=-3}"
+LOG_MAX_SIZE="${LOG_MAX_SIZE:-50m}"
+LOG_MAX_FILE="${LOG_MAX_FILE:-3}"
 
 # Prep host paths
 mkdir -p "$(dirname "$ENV_FILE")" "$(dirname "$QUOTES_FILE")" "$(dirname "$STATS_FILE")" "$LOG_DIR"

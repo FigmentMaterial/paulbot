@@ -57,6 +57,11 @@ def setup_logging():
     logging.getLogger('discord').setLevel(logging.INFO)
     logging.getLogger('websockets').setLevel(logging.WARNING)
 
+    # TEMPORARY: Debugging Discord voice issues
+    logging.getLogger('discord.voice_client').setLevel(logging.DEBUG)
+    logging.getLogger('discord.voice_state').setLevel(logging.DEBUG)
+    logging.getLogger('discord.gateway').setLevel(logging.DEBUG)
+
     logging.getLogger(__name__).info(
         "Logging initialized level=%s file=%s (stdout + rotating file)",
         log_level_str, log_file_path
@@ -231,8 +236,8 @@ async def fetch_message_stats(channel):
 @bot.event
 @discord_exception_handler
 async def on_ready():
-    logging.info(f"Logged in as {bot.user.name}")
-    logging.info(f"{bot.user.name} is ready to receive commands!")
+    logging.info("Logged in as %s", bot.user.name)
+    logging.info("%s is ready to receive commands!", bot.user.name)
     
     # Convert environmental variables to integers
     try:
@@ -242,38 +247,42 @@ async def on_ready():
         logging.exception(f"Error converting IDs to integers: {e}")
         return
     
+    # !!!Commenting out original reconnect logic to test new setup!!!
     # Join the voice channel specified in the environment variables
-    guild = bot.get_guild(guild_id)
-    if guild is None:
-        logging.error(f"Guild with ID {guild_id} not found.")
-    else:
-        logging.info(f"Guild found: {guild.name}")
+    #guild = bot.get_guild(guild_id)
+    #if guild is None:
+    #    logging.error(f"Guild with ID {guild_id} not found.")
+    #else:
+    #    logging.info(f"Guild found: {guild.name}")
         
-    channel = guild.get_channel(channel_id) if guild else None
-    if channel is None:
-        logging.error(f"Voice channel with ID {channel_id} not found in guild {guild_id}.")
+    #channel = guild.get_channel(channel_id) if guild else None
+    #if channel is None:
+    #    logging.error(f"Voice channel with ID {channel_id} not found in guild {guild_id}.")
     
-    if guild and channel:
-        if not bot.voice_clients:
-            for attempt in range (3):   # Retry logic: try 3 times
-                try:
-                    await channel.connect(timeout=60)   # Timeout set to 60 seconds
-                    break
-                except discord.ClientException as e:
-                    logging.exception(f"ClientException while connecting to voice: {e}")
-                except discord.ConnectionClosed as e:
-                    logging.exception(f"ConnectionClosed while connecting to voice: {e}")
-                except asyncio.TimeoutError:
-                    logging.warning(f"Asyncio: Timed out connecting to voice on attempt {attempt + 1}")
-                except Exception as e:
-                    logging.exception(f"Unexpected error connecting to voice: {e}")
-            else:
-                logging.error("Failed to connect to voice channel after 3 attempts.")
-        else:
-            logging.info(f"Already connected to a voice channel.")
-    else:
-        logging.error(f"Guild or voice channel not found. Unable to connect.")
-        
+    #if guild and channel:
+    #    if not bot.voice_clients:
+    #        for attempt in range (3):   # Retry logic: try 3 times
+    #            try:
+    #                await channel.connect(timeout=60)   # Timeout set to 60 seconds
+    #                break
+    #            except discord.ClientException as e:
+    #                logging.exception(f"ClientException while connecting to voice: {e}")
+    #            except discord.ConnectionClosed as e:
+    #                logging.exception(f"ConnectionClosed while connecting to voice: {e}")
+    #            except asyncio.TimeoutError:
+    #                logging.warning(f"Asyncio: Timed out connecting to voice on attempt {attempt + 1}")
+    #            except Exception as e:
+    #                logging.exception(f"Unexpected error connecting to voice: {e}")
+    #        else:
+    #            logging.error("Failed to connect to voice channel after 3 attempts.")
+    #    else:
+    #        logging.info(f"Already connected to a voice channel.")
+    #else:
+    #    logging.error(f"Guild or voice channel not found. Unable to connect.")
+    
+    ok = await reconnect_voice_client()
+    if not ok:
+        logging.error("Initial voice connect failed; read_quotes will keep retrying.")
     read_quotes.start()
 
 # Helper function to check if a file is in use
@@ -389,83 +398,118 @@ def convert_tts_to_mp3(quote):
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
 async def read_quotes():
-    if bot.voice_clients:
-        voice_client = bot.voice_clients[0]
-        if not voice_client.is_connected():
-            logging.warning("Voice client is not connected. Reconnecting...")
-            await reconnect_voice_client()
-            
-        filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
-        if filtered_quotes:
-            quote = random.choice(filtered_quotes)
-            logging.info(f"Selected quote to read aloud: {quote}")
-            
-            # Perform TTS conversion to MP3
-            success = await async_convert_tts_to_mp3(quote)
-            if not success:
-                logging.error("quote.mp3 was not created successfully")
-                return
-            
-            # Convert MP3 file to WAV
-            try:
-                audio = AudioSegment.from_mp3('quote.mp3')
-                audio.export('quote.wav', format='wav')
-            except Exception as e:
-                logging.exception(f"Error converting MP3 to WAV: {e}")
+    try:
+        guild = bot.get_guild(int(GUILD_ID))
+        vc = discord.utils.get(bot.voice_clients, guild=guild)
 
-            # Add a short delay to ensure the file systems recognizes the new file.
-            await asyncio.sleep(1)
-            
-            try:
-                source = discord.FFmpegPCMAudio('quote.wav')
-                if not voice_client.is_playing():
-                    voice_client.play(source)
-                
-                    # Wait for the playback to finish before proceeding
-                    while voice_client.is_playing():
-                        await asyncio.sleep(1)
-            except Exception as e:
-                logging.exception(f"Error in audio playback: {e}")
-                
-            finally:
-                # Clean up temporary files
-                try:
-                   delete_file_with_retry('quote.mp3')
-                   delete_file_with_retry('quote.wav')
-                except Exception as e:
-                    logging.exception(f"Error cleaning up audio files: {e}")
-        else:
+        if not vc or not vc.is_connected():
+            logging.warning("Voice client is not connected. Reconnecting...")
+            ok = await reconnect_voice_client()
+            if not ok:
+                return  # try again next loop
+            # refresh vc reference after reconnect
+            vc = discord.utils.get(bot.voice_clients, guild=guild)
+            if not vc or not vc.is_connected():
+                return
+
+        filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
+        if not filtered_quotes:
             logging.warning("No quotes available for playback.")
-    else:
-        logging.warning("No voice clients found. Attempting to reconnect...")
-        await reconnect_voice_client()
+            return
+
+        quote = random.choice(filtered_quotes)
+        logging.info(f"Selected quote to read aloud: {quote}")
+            
+        # Perform TTS conversion to MP3
+        success = await async_convert_tts_to_mp3(quote)
+        if not success:
+            logging.error("quote.mp3 was not created successfully")
+            return
+            
+        # Convert MP3 file to WAV
+        try:
+            audio = AudioSegment.from_mp3('quote.mp3')
+            audio.export('quote.wav', format='wav')
+        except Exception:
+            logging.exception("Error converting MP3 to WAV")
+            return
+
+        # Add a short delay to ensure the file systems recognizes the new file.
+        await asyncio.sleep(1)
+            
+        try:
+            if not vc.is_connected():
+                logging.warning("Lost voice connection before playback; skipping this tick.")
+                return
+            source = discord.FFmpegPCMAudio('quote.wav')
+            if not vc.is_playing():
+                vc.play(source)
+                # Wait for the playback to finish before proceeding
+                while vc.is_playing():
+                    await asyncio.sleep(1)
+        except Exception:
+            logging.exception("Error in audio playback")
+                
+        finally:
+            # Clean up temporary files
+            try:
+               delete_file_with_retry('quote.mp3')
+               delete_file_with_retry('quote.wav')
+            except Exception:
+                logging.exception("Error cleaning up audio files")
+    except Exception:
+        logging.exception("Unexpected error in read_quotes loop")
+
 
 async def reconnect_voice_client():
-    if bot.voice_clients:   # Check if already connected
-        logging.info("Already connected to a voice channel. Reconnection unnecessary.")
-        return
+    try:
+        guild = bot.get_guild(int(GUILD_ID))
+        channel = guild.get_channel(int(VOICE_CHANNEL_ID)) if guild else None
+
+        if not guild or not channel:
+            logging.error("Guild or voice channel not found.")
+            return False
+
+        # Find existing voice client for this guild (if any)
+        vc = discord.utils.get(bot.voice_clients, guild=guild)
+
+        # If vc exists but it's not connected, clean it up first
+        if vc and not vc.is_connected():
+            try:
+                await vc.disconnect(force=True)
+                logging.info("Stale voice connection disconnected (force=True).")
+            except Exception:
+                logging.exception("Error while force-disconnecting stale voice client.")
+
+        # If after cleanup we're still connected, we're done
+        vc = discord.utils.get(bot.voice_clients, guild=guild)
+        if vc and vc.is_connected():
+            logging.info("Already connected to voice channel: %s", getattr(vc.channel, "name", "?"))
+            return True
+
+        # Fresh connect with retries
+        max_retries = 5
+        retry_delay = 10    # seconds
     
-    max_retries = 5
-    retry_delay = 10    # seconds
-    
-    for attempt in range(1, max_retries + 1):
-        try:
-            guild = bot.get_guild(int(GUILD_ID))
-            channel = guild.get_channel(int(VOICE_CHANNEL_ID))
-            if guild and channel:
-                await channel.connect(timeout=60)   # Timeout set to 60 seconds
-                logging.info(f"Connected to voice channel: {channel.name}")
-                return
-            else:
-                logging.error("Guild or voice channel not found.")
-                return
-        except asyncio.TimeoutError:
-            logging.warning(f"Timeout while connecting to voice (attempt {attempt}/{max_retries}). Retrying in {retry_delay} seconds...")
-        except Exception as e:
-            logging.exception(f"Error during connection attempt {attempt}/{max_retries}: {e}")
-        
-        await asyncio.sleep(retry_delay)
-    logging.error("Failed to connect to voice channel after multiple attempts.")
+        for attempt in range(1, max_retries + 1):
+            try:
+                vc = await channel.connect(timeout=60, reconnect=True)
+                logging.info("Connected to voice channel %s", channel.name)
+                return True
+                guild = bot.get_guild(int(GUILD_ID))
+                channel = guild.get_channel(int(VOICE_CHANNEL_ID))
+            except asyncio.TimeoutError:
+                logging.warning("Timeout while connecting to voice (attempt %s/%s). Retrying in %s seconds...", attempt, max_retries, retry_delay)
+            except Exception:
+                logging.exception("Error during connection attempt %s/%s", attempt, max_retries)
+            await asyncio.sleep(retry_delay)
+
+        logging.error("Failed to connect to voice channel after multiple attempts.")
+        return False
+
+    except Exception:
+        logging.exception("Unexpected error in reconnect_voice_client")
+        return False
             
 # Trigger events based on commands types in Discord messages
 @bot.event

@@ -1,10 +1,10 @@
 {
     "paul_commands": {
-        "177902880714522624": 715,
+        "177902880714522624": 721,
         "405099653357502466": 60,
-        "466034731784601610": 270,
-        "178020850061017088": 463,
-        "197947126133555200": 40,
+        "466034731784601610": 275,
+        "178020850061017088": 465,
+        "197947126133555200": 41,
         "241811288332828672": 34,
         "300378168970182657": 22,
         "417117638569885696": 1,
@@ -754,6 +754,10 @@
         "https://cdn.discordapp.com/attachments/446214795352342530/1393429694421925988/Screenshot_20250711_072710_Instagram.jpg?ex=687a6447&is=687912c7&hm=d680ebc1c36f58bf48474068997d93d210ac595815d997a9fb19fa6e9df6855a&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1393429694421925988/Screenshot_20250711_072710_Instagram.jpg?ex=687a6447&is=687912c7&hm=d680ebc1c36f58bf48474068997d93d210ac595815d997a9fb19fa6e9df6855a&",
             "reactions": 2
+        },
+        "https://media.discordapp.net/attachments/446214795352342530/1332873699165999175/20250125_164342.jpg?ex=6796d6dd&is=6795855d&hm=15d836fa54669826b255a22b9df62e317738cec82cd9b23f65f700a04b59e930&=&format=webp&width=905&height=905": {
+            "content": "https://media.discordapp.net/attachments/446214795352342530/1332873699165999175/20250125_164342.jpg?ex=6796d6dd&is=6795855d&hm=15d836fa54669826b255a22b9df62e317738cec82cd9b23f65f700a04b59e930&=&format=webp&width=905&height=905",
+            "reactions": 1
         }
     },
     "fetch_completed": true

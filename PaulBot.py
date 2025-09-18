@@ -418,7 +418,7 @@ async def read_quotes():
             return
 
         quote = random.choice(filtered_quotes)
-        logging.info(f"Selected quote to read aloud: {quote}")
+        logging.info("Selected quote to read aloud: %s", quote)
             
         # Perform TTS conversion to MP3
         success = await async_convert_tts_to_mp3(quote)
@@ -496,8 +496,6 @@ async def reconnect_voice_client():
                 vc = await channel.connect(timeout=60, reconnect=True)
                 logging.info("Connected to voice channel %s", channel.name)
                 return True
-                guild = bot.get_guild(int(GUILD_ID))
-                channel = guild.get_channel(int(VOICE_CHANNEL_ID))
             except asyncio.TimeoutError:
                 logging.warning("Timeout while connecting to voice (attempt %s/%s). Retrying in %s seconds...", attempt, max_retries, retry_delay)
             except Exception:

@@ -138,6 +138,11 @@ intents = discord.Intents.all()
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Set global voice fails to support reconnects for stale voice sessions
+VOICE_FAIL_COUNT = 0
+VOICE_FAIL_WINDOW_START = 0.0
+
+# Define permanent file storage for persistent quote storage and statistics
 quotes_file = 'quotes.json'  # File to store quotes
 stats_file = 'stats.json'   # File to store stats
 
@@ -398,20 +403,41 @@ def convert_tts_to_mp3(quote):
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
 async def read_quotes():
+    global VOICE_FAIL_COUNT, VOICE_FAIL_WINDOW_START
     try:
         guild = bot.get_guild(int(GUILD_ID))
         vc = discord.utils.get(bot.voice_clients, guild=guild)
 
+        # Quick helper to track failures in a short window
+        def mark_failure():
+            global VOICE_FAIL_COUNT, VOICE_FAIL_WINDOW_START
+            now = time.monotonic()
+            if VOICE_FAIL_WINDOW_START == 0.0 or (now - VOICE_FAIL_WINDOW_START) > 180: # 3 minute window
+                VOICE_FAIL_WINDOW_START = now
+                VOICE_FAIL_COUNT = 1
+            else:
+                VOICE_FAIL_COUNT += 1
+
+        # Ensure connected
         if not vc or not vc.is_connected():
             logging.warning("Voice client is not connected. Reconnecting...")
             ok = await reconnect_voice_client()
             if not ok:
-                return  # try again next loop
+                mark_failure()
+                # Escalate to a fresh reset after 3 failures within 3 minutes
+                if VOICE_FAIL_COUNT >= 3:
+                    logging.warning("Repeated reconnect failures; attempting fresh voice reset.")
+                    if await reconnect_voice_client(fresh=True):
+                        VOICE_FAIL_COUNT = 0
+                        VOICE_FAIL_WINDOW_START = 0.0
+                return
             # refresh vc reference after reconnect
             vc = discord.utils.get(bot.voice_clients, guild=guild)
             if not vc or not vc.is_connected():
+                mark_failure()
                 return
 
+        # Prepare and play audio
         filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
         if not filtered_quotes:
             logging.warning("No quotes available for playback.")
@@ -424,6 +450,7 @@ async def read_quotes():
         success = await async_convert_tts_to_mp3(quote)
         if not success:
             logging.error("quote.mp3 was not created successfully")
+            mark_failure()
             return
             
         # Convert MP3 file to WAV
@@ -432,6 +459,7 @@ async def read_quotes():
             audio.export('quote.wav', format='wav')
         except Exception:
             logging.exception("Error converting MP3 to WAV")
+            mark_failure()
             return
 
         # Add a short delay to ensure the file systems recognizes the new file.
@@ -440,6 +468,7 @@ async def read_quotes():
         try:
             if not vc.is_connected():
                 logging.warning("Lost voice connection before playback; skipping this tick.")
+                mark_failure()
                 return
             source = discord.FFmpegPCMAudio('quote.wav')
             if not vc.is_playing():
@@ -449,6 +478,7 @@ async def read_quotes():
                     await asyncio.sleep(1)
         except Exception:
             logging.exception("Error in audio playback")
+            mark_failure()
                 
         finally:
             # Clean up temporary files
@@ -461,7 +491,7 @@ async def read_quotes():
         logging.exception("Unexpected error in read_quotes loop")
 
 
-async def reconnect_voice_client():
+async def reconnect_voice_client(fresh: bool = False) -> bool:
     try:
         guild = bot.get_guild(int(GUILD_ID))
         channel = guild.get_channel(int(VOICE_CHANNEL_ID)) if guild else None
@@ -473,13 +503,16 @@ async def reconnect_voice_client():
         # Find existing voice client for this guild (if any)
         vc = discord.utils.get(bot.voice_clients, guild=guild)
 
-        # If vc exists but it's not connected, clean it up first
-        if vc and not vc.is_connected():
+        # If asked for a fresh reset or vc exists but it's not connected, clean it up first
+        if fresh or (vc and not vc.is_connected()):
             try:
-                await vc.disconnect(force=True)
-                logging.info("Stale voice connection disconnected (force=True).")
+                if vc:
+                    await vc.disconnect(force=True)
+                    logging.info("Force-disconnected existing voice client (fresh=%s).", fresh)
+                # Give discord a moment to clear the old session
+                await asyncio.sleep(2)
             except Exception:
-                logging.exception("Error while force-disconnecting stale voice client.")
+                logging.exception("Error while force-disconnecting voice client during fresh reset.")
 
         # If after cleanup we're still connected, we're done
         vc = discord.utils.get(bot.voice_clients, guild=guild)
@@ -493,8 +526,9 @@ async def reconnect_voice_client():
     
         for attempt in range(1, max_retries + 1):
             try:
+                # reconnect=True allows internal retries; session is new anyway after a fresh
                 vc = await channel.connect(timeout=60, reconnect=True)
-                logging.info("Connected to voice channel %s", channel.name)
+                logging.info("Connected to voice channel %s (fresh=%s)", channel.name, fresh)
                 return True
             except asyncio.TimeoutError:
                 logging.warning("Timeout while connecting to voice (attempt %s/%s). Retrying in %s seconds...", attempt, max_retries, retry_delay)
@@ -508,8 +542,21 @@ async def reconnect_voice_client():
     except Exception:
         logging.exception("Unexpected error in reconnect_voice_client")
         return False
+
+# Trigger voice reconnects when the bot's voice state changes
+@bot.event
+async def on_voice_state_update(member, before, after):
+    try:
+        if member.id != bot.user.id:
+            return
+        # Bot left a channel (server-side) or was moved to None
+        if before.channel and after.channel is None:
+            logging.warning("Bot was disconnected from voice by server; scheduling fresh reconnect.")
+            asyncio.create_task(reconnect_voice_client(fresh=True))
+    except Exception:
+        logging.exception("Error in on_voice_state_update handler")
             
-# Trigger events based on commands types in Discord messages
+# Trigger events based on commands typed in Discord messages
 @bot.event
 @discord_exception_handler
 async def on_message(message):

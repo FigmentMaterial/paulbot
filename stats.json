@@ -1,9 +1,9 @@
 {
     "paul_commands": {
-        "177902880714522624": 721,
+        "177902880714522624": 723,
         "405099653357502466": 60,
-        "466034731784601610": 275,
-        "178020850061017088": 466,
+        "466034731784601610": 279,
+        "178020850061017088": 468,
         "197947126133555200": 41,
         "241811288332828672": 34,
         "300378168970182657": 22,
@@ -45,7 +45,7 @@
         },
         "Penis": {
             "content": "Penis",
-            "reactions": 8
+            "reactions": 17
         },
         "#facts": {
             "content": "#facts",
@@ -309,7 +309,7 @@
         },
         "#guessillgofuckmyself": {
             "content": "#guessillgofuckmyself",
-            "reactions": 3
+            "reactions": 6
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1252848206417760256/image0.gif?ex=6673b551&is=667263d1&hm=6c26a86cc9a9d73a88ea6f735ec49440f3cdf768d7845ba25c99185984fec0d2&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1252848206417760256/image0.gif?ex=6673b551&is=667263d1&hm=6c26a86cc9a9d73a88ea6f735ec49440f3cdf768d7845ba25c99185984fec0d2&",
@@ -762,6 +762,10 @@
         "https://tenor.com/view/dis-gon-b-gud-this-is-going-to-be-good-watch-watching-entertaining-gif-4878679": {
             "content": "https://tenor.com/view/dis-gon-b-gud-this-is-going-to-be-good-watch-watching-entertaining-gif-4878679",
             "reactions": 2
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1406481760157433967/HELLDIVERSTM_2_-_2025-08-16_9-35-36_PM.mp4?ex=68a29fb6&is=68a14e36&hm=ed00b2afcce139cebcc69297608db1d0c82c072b5a6988fdeb245a6ac5ad66bb&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1406481760157433967/HELLDIVERSTM_2_-_2025-08-16_9-35-36_PM.mp4?ex=68a29fb6&is=68a14e36&hm=ed00b2afcce139cebcc69297608db1d0c82c072b5a6988fdeb245a6ac5ad66bb&",
+            "reactions": 4
         }
     },
     "fetch_completed": true

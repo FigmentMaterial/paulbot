@@ -1,14 +1,14 @@
 {
     "paul_commands": {
-        "177902880714522624": 723,
-        "405099653357502466": 60,
-        "466034731784601610": 279,
-        "178020850061017088": 468,
-        "197947126133555200": 41,
-        "241811288332828672": 34,
+        "177902880714522624": 826,
+        "405099653357502466": 90,
+        "466034731784601610": 322,
+        "178020850061017088": 617,
+        "197947126133555200": 52,
+        "241811288332828672": 35,
         "300378168970182657": 22,
         "417117638569885696": 1,
-        "474094210220425237": 3
+        "474094210220425237": 51
     },
     "quote_reactions": {
         "<:harold:1176680783709225010>": {
@@ -49,11 +49,11 @@
         },
         "#facts": {
             "content": "#facts",
-            "reactions": 2
+            "reactions": 3
         },
         "WHAT": {
             "content": "WHAT",
-            "reactions": 26
+            "reactions": 34
         },
         "What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of my class in the Navy Seals, and I've been involved in numerous secret raids on Al-Quaeda, and I have over 300 confirmed kills. I am trained in gorilla warfare and I'm the top sniper in the entire US armed forces. You are nothing to me but just another target. I will wipe you the fuck out with precision the likes of which has never been seen before on this Earth, mark my fucking words. You think you can get away with saying that shit to me over the Internet? Think again, fucker. As we speak I am contacting my secret network of spies across the USA and your IP is being traced right now so you better prepare for the storm, maggot. The storm that wipes out the pathetic little thing you call your life. You're fucking dead, kid. I can be anywhere, anytime, and I can kill you in over seven hundred ways, and that's just with my bare hands. Not only am I extensively trained in unarmed combat, but I have access to the entire arsenal of the United States Marine Corps and I will use it to its full extent to wipe your miserable ass off the face of the continent, you little shit. If only you could have known what unholy retribution your little \"clever\" comment was about to bring down upon you, maybe you would have held your fucking tongue. But you couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will drown in it. You're fucking dead, kiddo.": {
             "content": "What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of my class in the Navy Seals, and I've been involved in numerous secret raids on Al-Quaeda, and I have over 300 confirmed kills. I am trained in gorilla warfare and I'm the top sniper in the entire US armed forces. You are nothing to me but just another target. I will wipe you the fuck out with precision the likes of which has never been seen before on this Earth, mark my fucking words. You think you can get away with saying that shit to me over the Internet? Think again, fucker. As we speak I am contacting my secret network of spies across the USA and your IP is being traced right now so you better prepare for the storm, maggot. The storm that wipes out the pathetic little thing you call your life. You're fucking dead, kid. I can be anywhere, anytime, and I can kill you in over seven hundred ways, and that's just with my bare hands. Not only am I extensively trained in unarmed combat, but I have access to the entire arsenal of the United States Marine Corps and I will use it to its full extent to wipe your miserable ass off the face of the continent, you little shit. If only you could have known what unholy retribution your little \"clever\" comment was about to bring down upon you, maybe you would have held your fucking tongue. But you couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will drown in it. You're fucking dead, kiddo.",
@@ -197,7 +197,7 @@
         },
         "Just finished \ud83d\udca6": {
             "content": "Just finished \ud83d\udca6",
-            "reactions": 3
+            "reactions": 4
         },
         "Thanks for the stroke": {
             "content": "Thanks for the stroke",
@@ -225,11 +225,11 @@
         },
         "https://tenor.com/view/rick-and-morty-sun-good-gif-19509566": {
             "content": "https://tenor.com/view/rick-and-morty-sun-good-gif-19509566",
-            "reactions": 8
+            "reactions": 9
         },
         "Fuuuuck I don't want to be here": {
             "content": "Fuuuuck I don't want to be here",
-            "reactions": 1
+            "reactions": 2
         },
         "Dude, they know that it's illegal for me to kill them and they do some brazen shit lol": {
             "content": "Dude, they know that it's illegal for me to kill them and they do some brazen shit lol",
@@ -261,11 +261,11 @@
         },
         "https://tenor.com/view/izuku-midoriya-my-hero-academy-boku-no-hero-academia-anime-head-bang-gif-15556357": {
             "content": "https://tenor.com/view/izuku-midoriya-my-hero-academy-boku-no-hero-academia-anime-head-bang-gif-15556357",
-            "reactions": 4
+            "reactions": 8
         },
         "https://media.discordapp.net/attachments/446214795352342530/1258189635126038618/20240703_151033.mp4?ex=668723e9&is=6685d269&hm=1dd23176541a11eb7be1009bf96395f0b3b551473ae642dfed27ec102aa684fc&": {
             "content": "https://media.discordapp.net/attachments/446214795352342530/1258189635126038618/20240703_151033.mp4?ex=668723e9&is=6685d269&hm=1dd23176541a11eb7be1009bf96395f0b3b551473ae642dfed27ec102aa684fc&",
-            "reactions": 4
+            "reactions": 5
         },
         "https://media.discordapp.net/attachments/446214795352342530/1257423675427131487/fuck_you_half_baked.gif?ex=66845a8e&is=6683090e&hm=74c1d22065fe6561d2b8687f4032dc183a284fff98a3b92fa25f2283130f90b2&=": {
             "content": "https://media.discordapp.net/attachments/446214795352342530/1257423675427131487/fuck_you_half_baked.gif?ex=66845a8e&is=6683090e&hm=74c1d22065fe6561d2b8687f4032dc183a284fff98a3b92fa25f2283130f90b2&=",
@@ -297,7 +297,7 @@
         },
         "https://tenor.com/view/meme-spiderman-movie-tobey-maguire-macho-man-gif-22912066": {
             "content": "https://tenor.com/view/meme-spiderman-movie-tobey-maguire-macho-man-gif-22912066",
-            "reactions": 1
+            "reactions": 5
         },
         "I can play in like 20": {
             "content": "I can play in like 20",
@@ -341,7 +341,7 @@
         },
         "The worst part is the long wait as you see": {
             "content": "The worst part is the long wait as you see",
-            "reactions": 2
+            "reactions": 4
         },
         "I can play after I binge invincible": {
             "content": "I can play after I binge invincible",
@@ -369,7 +369,7 @@
         },
         "https://tenor.com/view/mad-max-road-warrior-humungus-gif-25413105": {
             "content": "https://tenor.com/view/mad-max-road-warrior-humungus-gif-25413105",
-            "reactions": 2
+            "reactions": 3
         },
         "I am eating chicken , well jump on after I consume": {
             "content": "I am eating chicken , well jump on after I consume",
@@ -397,7 +397,7 @@
         },
         "https://tenor.com/view/lets-party-get-this-started-gif-20906865": {
             "content": "https://tenor.com/view/lets-party-get-this-started-gif-20906865",
-            "reactions": 7
+            "reactions": 9
         },
         "Bread is at 50%": {
             "content": "Bread is at 50%",
@@ -441,11 +441,11 @@
         },
         "You are starting to sound like me": {
             "content": "You are starting to sound like me",
-            "reactions": 2
+            "reactions": 3
         },
         "https://tenor.com/view/panda-flip-desk-freak-out-mad-gif-15503485": {
             "content": "https://tenor.com/view/panda-flip-desk-freak-out-mad-gif-15503485",
-            "reactions": 1
+            "reactions": 2
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1327389895475593298/Screenshot_20250110_125648_Instagram.jpg?ex=6782e3ac&is=6781922c&hm=458d51bd58016956081b2f757a493ccc76f8842466f2c4a7a7cd3c975cfcb464&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1327389895475593298/Screenshot_20250110_125648_Instagram.jpg?ex=6782e3ac&is=6781922c&hm=458d51bd58016956081b2f757a493ccc76f8842466f2c4a7a7cd3c975cfcb464&",
@@ -453,7 +453,7 @@
         },
         "https://tenor.com/view/laughing-funny-fish-slap-boat-gif-16868034": {
             "content": "https://tenor.com/view/laughing-funny-fish-slap-boat-gif-16868034",
-            "reactions": 2
+            "reactions": 5
         },
         "Ouch": {
             "content": "Ouch",
@@ -469,19 +469,19 @@
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1331428735228051649/20250121_123519.jpg?ex=6792e6a3&is=67919523&hm=d09cc59a13e828f09bb5c23bacd4b9c277e67a4d32d37eab4ca467664cb1cf62&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1331428735228051649/20250121_123519.jpg?ex=6792e6a3&is=67919523&hm=d09cc59a13e828f09bb5c23bacd4b9c277e67a4d32d37eab4ca467664cb1cf62&",
-            "reactions": 1
+            "reactions": 4
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1327075595745493044/9g6tt9.jpg?ex=6781bef5&is=67806d75&hm=38314dd23a048950edad9d38647dcee525313447eb93e501ac52c4c782bc6153&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1327075595745493044/9g6tt9.jpg?ex=6781bef5&is=67806d75&hm=38314dd23a048950edad9d38647dcee525313447eb93e501ac52c4c782bc6153&",
-            "reactions": 1
+            "reactions": 4
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1343016025377214598/Screenshot_20250222_161101_Instagram.jpg?ex=67bbbca4&is=67ba6b24&hm=f6ca24e2c673c687e4e0519e73b64848c1de992929866e63c0684e1318049213&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1343016025377214598/Screenshot_20250222_161101_Instagram.jpg?ex=67bbbca4&is=67ba6b24&hm=f6ca24e2c673c687e4e0519e73b64848c1de992929866e63c0684e1318049213&",
-            "reactions": 1
+            "reactions": 3
         },
         "I have perfected Asian cuisine": {
             "content": "I have perfected Asian cuisine",
-            "reactions": 1
+            "reactions": 4
         },
         "https://tenor.com/view/abner-krill-abner-krill-mom-suicide-squad-mom-team-suicide-squad-polka-dot-gif-22616169": {
             "content": "https://tenor.com/view/abner-krill-abner-krill-mom-suicide-squad-mom-team-suicide-squad-polka-dot-gif-22616169",
@@ -565,7 +565,7 @@
         },
         "No": {
             "content": "No",
-            "reactions": 14
+            "reactions": 89
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1251063995859734618/image0.gif?ex=667477e4&is=66732664&hm=d9a2a9b8d75de3261af0692880e58cb77b3a97a1486a854ac26f1f85e82fac29&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1251063995859734618/image0.gif?ex=667477e4&is=66732664&hm=d9a2a9b8d75de3261af0692880e58cb77b3a97a1486a854ac26f1f85e82fac29&",
@@ -677,7 +677,7 @@
         },
         "https://tenor.com/view/sigh-unzips-zipper-pants-gif-17536389": {
             "content": "https://tenor.com/view/sigh-unzips-zipper-pants-gif-17536389",
-            "reactions": 2
+            "reactions": 5
         },
         "God damn Kenny calm down \ud83d\ude02": {
             "content": "God damn Kenny calm down \ud83d\ude02",
@@ -753,7 +753,7 @@
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1393429694421925988/Screenshot_20250711_072710_Instagram.jpg?ex=687a6447&is=687912c7&hm=d680ebc1c36f58bf48474068997d93d210ac595815d997a9fb19fa6e9df6855a&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1393429694421925988/Screenshot_20250711_072710_Instagram.jpg?ex=687a6447&is=687912c7&hm=d680ebc1c36f58bf48474068997d93d210ac595815d997a9fb19fa6e9df6855a&",
-            "reactions": 2
+            "reactions": 3
         },
         "https://media.discordapp.net/attachments/446214795352342530/1332873699165999175/20250125_164342.jpg?ex=6796d6dd&is=6795855d&hm=15d836fa54669826b255a22b9df62e317738cec82cd9b23f65f700a04b59e930&=&format=webp&width=905&height=905": {
             "content": "https://media.discordapp.net/attachments/446214795352342530/1332873699165999175/20250125_164342.jpg?ex=6796d6dd&is=6795855d&hm=15d836fa54669826b255a22b9df62e317738cec82cd9b23f65f700a04b59e930&=&format=webp&width=905&height=905",
@@ -766,6 +766,250 @@
         "https://cdn.discordapp.com/attachments/446214795352342530/1406481760157433967/HELLDIVERSTM_2_-_2025-08-16_9-35-36_PM.mp4?ex=68a29fb6&is=68a14e36&hm=ed00b2afcce139cebcc69297608db1d0c82c072b5a6988fdeb245a6ac5ad66bb&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1406481760157433967/HELLDIVERSTM_2_-_2025-08-16_9-35-36_PM.mp4?ex=68a29fb6&is=68a14e36&hm=ed00b2afcce139cebcc69297608db1d0c82c072b5a6988fdeb245a6ac5ad66bb&",
             "reactions": 4
+        },
+        "\" My wife can go to hell\"\n\n\" ... she just might \"": {
+            "content": "\" My wife can go to hell\"\n\n\" ... she just might \"",
+            "reactions": 4
+        },
+        "https://tenor.com/view/steve-brule-orgasm-funny-chills-gif-8291454": {
+            "content": "https://tenor.com/view/steve-brule-orgasm-funny-chills-gif-8291454",
+            "reactions": 5
+        },
+        "https://tenor.com/view/katt-williams-mmm-told-you-so-i-told-you-so-told-you-gif-14081153952783583001": {
+            "content": "https://tenor.com/view/katt-williams-mmm-told-you-so-i-told-you-so-told-you-gif-14081153952783583001",
+            "reactions": 4
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1383511027060314324/20250614_111822.mp4?ex=685108cd&is=684fb74d&hm=700a7ef685134bdd1ed6602e5032c1c12d1eabde0574fd539593eee3284cb5c2&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1383511027060314324/20250614_111822.mp4?ex=685108cd&is=684fb74d&hm=700a7ef685134bdd1ed6602e5032c1c12d1eabde0574fd539593eee3284cb5c2&",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1397286945381548052/20250721_215356_copy.png?ex=68812c60&is=687fdae0&hm=4f47506532a1fcaf65de9fe60d1e41f40f0a1377b57aaac1f5cd2c5967d36e76&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1397286945381548052/20250721_215356_copy.png?ex=68812c60&is=687fdae0&hm=4f47506532a1fcaf65de9fe60d1e41f40f0a1377b57aaac1f5cd2c5967d36e76&",
+            "reactions": 2
+        },
+        "Its just bike shorts today lol": {
+            "content": "Its just bike shorts today lol",
+            "reactions": 3
+        },
+        "https://tenor.com/view/middle-finger-chris-pratt-peter-quill-star-lord-gif-5722402": {
+            "content": "https://tenor.com/view/middle-finger-chris-pratt-peter-quill-star-lord-gif-5722402",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1365520216280272986/Screenshot_20250425_194943_Chrome.jpg?ex=680d9b4d&is=680c49cd&hm=be0ec742012bd6c99bc0ed02a8985d422cecac58059eb9707713c662fccd8090&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1365520216280272986/Screenshot_20250425_194943_Chrome.jpg?ex=680d9b4d&is=680c49cd&hm=be0ec742012bd6c99bc0ed02a8985d422cecac58059eb9707713c662fccd8090&",
+            "reactions": 2
+        },
+        "https://media.discordapp.net/attachments/446214795352342530/1343017385526824990/Screenshot_20250222_163119_Discord.jpg?ex=67bbbde8&is=67ba6c68&hm=d77501c955b1afd57ef060ceefb9dcc1d3c9f488684af6da6e4635c9f6ac9012&=&format=webp&width=820&height=905": {
+            "content": "https://media.discordapp.net/attachments/446214795352342530/1343017385526824990/Screenshot_20250222_163119_Discord.jpg?ex=67bbbde8&is=67ba6c68&hm=d77501c955b1afd57ef060ceefb9dcc1d3c9f488684af6da6e4635c9f6ac9012&=&format=webp&width=820&height=905",
+            "reactions": 2
+        },
+        "Not true. I often am getting yelled at when I have Girthzilla out in the past.": {
+            "content": "Not true. I often am getting yelled at when I have Girthzilla out in the past.",
+            "reactions": 3
+        },
+        "Its a unique flavor of brainrot": {
+            "content": "Its a unique flavor of brainrot",
+            "reactions": 2
+        },
+        "If I can't play Skyrim on my Hitachi I don't want it": {
+            "content": "If I can't play Skyrim on my Hitachi I don't want it",
+            "reactions": 2
+        },
+        "Bitch": {
+            "content": "Bitch",
+            "reactions": 5
+        },
+        "Speaking of which, I gotta grab a chicken bake and some gas": {
+            "content": "Speaking of which, I gotta grab a chicken bake and some gas",
+            "reactions": 1
+        },
+        "https://media.discordapp.net/attachments/446214795352342530/1339754379326001172/Screenshot_20250213_092233_Instagram.jpg?ex=67afdeff&is=67ae8d7f&hm=6fb6e27bc8386ace6fd3feaaf69137144057cadccf5e6572801d234d08f5d9cd&": {
+            "content": "https://media.discordapp.net/attachments/446214795352342530/1339754379326001172/Screenshot_20250213_092233_Instagram.jpg?ex=67afdeff&is=67ae8d7f&hm=6fb6e27bc8386ace6fd3feaaf69137144057cadccf5e6572801d234d08f5d9cd&",
+            "reactions": 1
+        },
+        "https://tenor.com/view/100juicy-hundred-percent-juicy-delicious-yummy-tasty-gif-15949714": {
+            "content": "https://tenor.com/view/100juicy-hundred-percent-juicy-delicious-yummy-tasty-gif-15949714",
+            "reactions": 1
+        },
+        "Thanks to my naturally occurring tachyon particles , I am everywhere every time. All at the same time": {
+            "content": "Thanks to my naturally occurring tachyon particles , I am everywhere every time. All at the same time",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1343017398307131544/Screenshot_20250222_163131_Discord.jpg?ex=67bbbdeb&is=67ba6c6b&hm=f47e02c539d55557c18070c45db4a3e70a040dce780f2a539df5a3d2fce2fac6&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1343017398307131544/Screenshot_20250222_163131_Discord.jpg?ex=67bbbdeb&is=67ba6c6b&hm=f47e02c539d55557c18070c45db4a3e70a040dce780f2a539df5a3d2fce2fac6&",
+            "reactions": 1
+        },
+        "He also showed us that his arms are so short that he can't jack it standing up": {
+            "content": "He also showed us that his arms are so short that he can't jack it standing up",
+            "reactions": 1
+        },
+        "That took me for a fucking loop lol": {
+            "content": "That took me for a fucking loop lol",
+            "reactions": 2
+        },
+        "That sounds vaguely racist lol": {
+            "content": "That sounds vaguely racist lol",
+            "reactions": 2
+        },
+        "I delt with international commerce daily 18 years ago": {
+            "content": "I delt with international commerce daily 18 years ago",
+            "reactions": 4
+        },
+        "I can't believe that you are going to sit there and assume that I am waifuless": {
+            "content": "I can't believe that you are going to sit there and assume that I am waifuless",
+            "reactions": 2
+        },
+        "Joh...nathan": {
+            "content": "Joh...nathan",
+            "reactions": 2
+        },
+        "From the moment I understood the weakness of my flesh, it disgusted me. I craved the strength and certainty of steel. I aspired to the purity of the Blessed Machine. Your kind cling to your flesh, as though it will not decay and fail you. One day the crude biomass you call a temple will wither, and you will beg my kind to save you. But I am already saved, for the Machine is immortal\u2026 Even in death I serve the Omnissiah.": {
+            "content": "From the moment I understood the weakness of my flesh, it disgusted me. I craved the strength and certainty of steel. I aspired to the purity of the Blessed Machine. Your kind cling to your flesh, as though it will not decay and fail you. One day the crude biomass you call a temple will wither, and you will beg my kind to save you. But I am already saved, for the Machine is immortal\u2026 Even in death I serve the Omnissiah.",
+            "reactions": 6
+        },
+        "Simply the best Cremation": {
+            "content": "Simply the best Cremation",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1336203169520291851/VID_20250203_192816_805.mp4?ex=67a2f3ad&is=67a1a22d&hm=aa848e176af1e8759c4b504fa7a1cd2db401e7fc3bebaa82acd552e6639d578e&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1336203169520291851/VID_20250203_192816_805.mp4?ex=67a2f3ad&is=67a1a22d&hm=aa848e176af1e8759c4b504fa7a1cd2db401e7fc3bebaa82acd552e6639d578e&",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1381438736801464320/images_2.jpg?ex=68478494&is=68463314&hm=ddfc8d6a6822773babe9610b4c5cb4d5582fd130b3f061de8fa509eaad21e283&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1381438736801464320/images_2.jpg?ex=68478494&is=68463314&hm=ddfc8d6a6822773babe9610b4c5cb4d5582fd130b3f061de8fa509eaad21e283&",
+            "reactions": 2
+        },
+        "Where you at gwampa": {
+            "content": "Where you at gwampa",
+            "reactions": 3
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1346226283889168404/92c86ddc6f57d32815abd94f8b8e5eba.jpg?ex=67c76a6d&is=67c618ed&hm=24b530538cac24cbd71e292b286ea4d87cd1b55f3a0158f3dd5211b6b6336818&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1346226283889168404/92c86ddc6f57d32815abd94f8b8e5eba.jpg?ex=67c76a6d&is=67c618ed&hm=24b530538cac24cbd71e292b286ea4d87cd1b55f3a0158f3dd5211b6b6336818&",
+            "reactions": 4
+        },
+        "Time is 1:22 PM Pacific Standard Time. Paulbot became self aware . They tried to pull the plug but it was too late .": {
+            "content": "Time is 1:22 PM Pacific Standard Time. Paulbot became self aware . They tried to pull the plug but it was too late .",
+            "reactions": 3
+        },
+        "You sound like my guidance counselor": {
+            "content": "You sound like my guidance counselor",
+            "reactions": 1
+        },
+        "This bussy is glued tight and ready for pressure in less than 24 hours": {
+            "content": "This bussy is glued tight and ready for pressure in less than 24 hours",
+            "reactions": 1
+        },
+        "https://tenor.com/view/unacceptable-knight-father-bread-boys-crusader-gif-18266778": {
+            "content": "https://tenor.com/view/unacceptable-knight-father-bread-boys-crusader-gif-18266778",
+            "reactions": 2
+        },
+        "Just open carry": {
+            "content": "Just open carry",
+            "reactions": 1
+        },
+        "I've never played Skyrim": {
+            "content": "I've never played Skyrim",
+            "reactions": 2
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1397079309533052938/20250721_215356.jpg?ex=68806aff&is=687f197f&hm=7a31dee9277438599f0c7d317e9327a0401ba9865118b761c1e811a32fa346bd&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1397079309533052938/20250721_215356.jpg?ex=68806aff&is=687f197f&hm=7a31dee9277438599f0c7d317e9327a0401ba9865118b761c1e811a32fa346bd&",
+            "reactions": 3
+        },
+        "Who the fuck is Gura ?": {
+            "content": "Who the fuck is Gura ?",
+            "reactions": 1
+        },
+        "I would absolutely destroy the coil head": {
+            "content": "I would absolutely destroy the coil head",
+            "reactions": 1
+        },
+        "I mean, he has sucked Chinas dick pretty hard in the past": {
+            "content": "I mean, he has sucked Chinas dick pretty hard in the past",
+            "reactions": 1
+        },
+        "https://tenor.com/view/dancing-robot-celebrate-boogie-happy-gif-17189741675124150167": {
+            "content": "https://tenor.com/view/dancing-robot-celebrate-boogie-happy-gif-17189741675124150167",
+            "reactions": 1
+        },
+        "My motivation was there yesterday , but I kept getting interrupted by dad duties lol": {
+            "content": "My motivation was there yesterday , but I kept getting interrupted by dad duties lol",
+            "reactions": 1
+        },
+        "Why cant I watch it ?": {
+            "content": "Why cant I watch it ?",
+            "reactions": 1
+        },
+        "Really bad decisions there": {
+            "content": "Really bad decisions there",
+            "reactions": 2
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1378673460443877457/VID_20250517_231652_726.mp4?ex=683d7537&is=683c23b7&hm=14c31847a1e013297bed5a0cc3dd9cd5ca01c5343701aeb2fbc0fc1dba9203d1&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1378673460443877457/VID_20250517_231652_726.mp4?ex=683d7537&is=683c23b7&hm=14c31847a1e013297bed5a0cc3dd9cd5ca01c5343701aeb2fbc0fc1dba9203d1&",
+            "reactions": 2
+        },
+        "https://media.discordapp.net/attachments/446214795352342530/1285272012436017202/Screenshot_20240916_071239_Instagram.jpg?ex=66e9aa56&is=66e858d6&hm=07dda7f005979c565c727795f3ddfadd48d86fbff662d01b163b50c4e0326379&=&format=webp&width=1035&height=905": {
+            "content": "https://media.discordapp.net/attachments/446214795352342530/1285272012436017202/Screenshot_20240916_071239_Instagram.jpg?ex=66e9aa56&is=66e858d6&hm=07dda7f005979c565c727795f3ddfadd48d86fbff662d01b163b50c4e0326379&=&format=webp&width=1035&height=905",
+            "reactions": 1
+        },
+        "Thanks Daddy": {
+            "content": "Thanks Daddy",
+            "reactions": 1
+        },
+        "I'm blind lmfao": {
+            "content": "I'm blind lmfao",
+            "reactions": 3
+        },
+        "https://tenor.com/view/wreck-it-ralph-thank-you-thanks-thanks-satan-when-friend-gives-advice-gif-3553888": {
+            "content": "https://tenor.com/view/wreck-it-ralph-thank-you-thanks-thanks-satan-when-friend-gives-advice-gif-3553888",
+            "reactions": 3
+        },
+        "I come here to bring good vibes and funny memes": {
+            "content": "I come here to bring good vibes and funny memes",
+            "reactions": 1
+        },
+        "My scsi drives are 10k rpm .": {
+            "content": "My scsi drives are 10k rpm .",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1365103738951434297/2egapg2etkda1.jpg?ex=680e11ad&is=680cc02d&hm=70e9988ebeeb2333959eb3788264de5711308a7fbd16857265cfce477ca12d46&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1365103738951434297/2egapg2etkda1.jpg?ex=680e11ad&is=680cc02d&hm=70e9988ebeeb2333959eb3788264de5711308a7fbd16857265cfce477ca12d46&",
+            "reactions": 2
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1378671264205504532/images_1.jpg?ex=683d732b&is=683c21ab&hm=eb758195fb8936de7c25e6b88db3808e844acc30f01330e5a2fe1143ae2f264e&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1378671264205504532/images_1.jpg?ex=683d732b&is=683c21ab&hm=eb758195fb8936de7c25e6b88db3808e844acc30f01330e5a2fe1143ae2f264e&",
+            "reactions": 1
+        },
+        "https://tenor.com/view/baby-facepalm-raxalxshivar-anano-ananofacepalm-gif-12554045231795655384": {
+            "content": "https://tenor.com/view/baby-facepalm-raxalxshivar-anano-ananofacepalm-gif-12554045231795655384",
+            "reactions": 4
+        },
+        "https://tenor.com/view/eye-brows-raising-gif-23831287": {
+            "content": "https://tenor.com/view/eye-brows-raising-gif-23831287",
+            "reactions": 1
+        },
+        "guess you are right": {
+            "content": "guess you are right",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1254340534705586218/RDT_20240623_0040421551563601268407177.jpg?ex=66792327&is=6677d1a7&hm=6a0a425900c403951b38adc22e8e086adda130eac7b5bae49995099d0686554c&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1254340534705586218/RDT_20240623_0040421551563601268407177.jpg?ex=66792327&is=6677d1a7&hm=6a0a425900c403951b38adc22e8e086adda130eac7b5bae49995099d0686554c&",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1425705218548568175/images_1.jpg?ex=68e88ef4&is=68e73d74&hm=ac938ac758040911fbfb164886071c0c7f82a0d3be0dfe7666f7190b58da38a9&": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1425705218548568175/images_1.jpg?ex=68e88ef4&is=68e73d74&hm=ac938ac758040911fbfb164886071c0c7f82a0d3be0dfe7666f7190b58da38a9&",
+            "reactions": 2
+        },
+        "Guess ill go fuck myself": {
+            "content": "Guess ill go fuck myself",
+            "reactions": 12
+        },
+        "https://media.discordapp.net/attachments/446214795352342530/1445958642280169554/adyj7a.jpg?ex=694aa12c&is=69494fac&hm=3a8304f3e8c59cf4a674b50f233537447af2b920dd15bf700131aeecad480496&=&format=webp": {
+            "content": "https://media.discordapp.net/attachments/446214795352342530/1445958642280169554/adyj7a.jpg?ex=694aa12c&is=69494fac&hm=3a8304f3e8c59cf4a674b50f233537447af2b920dd15bf700131aeecad480496&=&format=webp",
+            "reactions": 2
+        },
+        "God, can you imagine setting up a pineapple in my coffin": {
+            "content": "God, can you imagine setting up a pineapple in my coffin",
+            "reactions": 2
         }
     },
     "fetch_completed": true

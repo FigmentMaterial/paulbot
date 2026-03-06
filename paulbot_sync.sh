@@ -31,33 +31,35 @@ export GITHUB_URL="https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/$GITHUB_USE
 [[ -f "$RUN_SCRIPT" ]] || { echo "Run script not executable or missing at $RUN_SCRIPT. Exiting."; exit 1; }
 
 # Navigate to the PaulBot repository
-cd $REPO_PATH || { echo "Failed to navigate to $REPO_PATH"; exit 1; }
+cd "$REPO_PATH" || { echo "Failed to navigate to $REPO_PATH"; exit 1; }
 
-# Check for changes in GitHub repo, then pull if needed
-if git fetch --dry-run 2>/dev/null | grep -q .; then
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+OLD_HEAD="$(git rev-parse HEAD)"
+
+# Fetch the current branch from the authenticated GitHub URL
+git fetch "$GITHUB_URL" "$CURRENT_BRANCH" || { echo "Git fetch failed. Exiting."; exit 1; }
+
+REMOTE_HEAD="$(git rev-parse FETCH_HEAD)"
+
+# Pull only if remote HEAD differs from local HEAD
+if [[ "$OLD_HEAD" != "$REMOTE_HEAD" ]]; then
     echo "Changes detected in remote repository. Pulling updates..."
-    git pull $GITHUB_URL || { echo "Git pull failed. Exiting."; exit 1; }
+    git pull --ff-only "$GITHUB_URL" "$CURRENT_BRANCH" || { echo "Git pull failed. Exiting."; exit 1; }
+    NEW_HEAD="$(git rev-parse HEAD)"
 else
     echo "Repository is already up-to-date. No pull needed."
+    NEW_HEAD="$OLD_HEAD"
 fi
 
-# Inspect for changes in core files
+# Inspect pulled changes for core files
 echo "Checking for changes in core files..."
-if git diff --name-only HEAD~1 | grep -qE "Paulbot.py|requirements.txt"; then
+if [[ "$OLD_HEAD" != "$NEW_HEAD" ]] && git diff --name-only "$OLD_HEAD" "$NEW_HEAD" | grep -qE '(^|/)(Paulbot\.py|requirements\.txt)$'; then
     echo "Changes detected in core files. Restarting Docker container..."
 
-    # Stop and remove the existing container safely
     docker ps -aq --filter "name=$DOCKER_CONTAINER" | xargs -r docker rm -f || echo "No matching container to remove."
-
-    # Rebuild Docker container
-    docker build -t $DOCKER_IMAGE . || { echo "Docker build failed. Exiting."; exit 1; }
-
-    # Call script to restart Docker container
+    docker build -t "$DOCKER_IMAGE" . || { echo "Docker build failed. Exiting."; exit 1; }
     "$RUN_SCRIPT" || { echo "Failed to restart PaulBot. Exiting."; exit 1; }
-
-    # Clean up used Docker images
     docker image prune -f || echo "Failed to prune unused images."
-    
 else
     echo "No changes detected in core files. Skipping container rebuild."
 fi
@@ -67,7 +69,7 @@ echo "Checking for changes to commit to GitHub..."
 git add quotes.json stats.json || echo "No changes to add."
 if ! git diff --cached --quiet; then
     git commit -m "Automated sync at $(date)" || { echo "Failed to commit changes."; exit 1; }
-    git push $GITHUB_URL || { echo "Git push failed"; exit 1; }
+    git push "$GITHUB_URL" || { echo "Git push failed"; exit 1; }
 else
     echo "No changes to commit."
 fi

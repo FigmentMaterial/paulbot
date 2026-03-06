@@ -471,7 +471,7 @@ async def read_quotes():
 
     try:
         guild, channel = get_target_guild_and_channel()
-        if not guild or channel:
+        if not guild or not channel:
             logging.error("Target guild/channel unavailable for read_quotes.")
             return
 

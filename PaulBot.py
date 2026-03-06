@@ -255,7 +255,7 @@ async def on_ready():
         read_quotes.start()
 
     guild, channel = get_target_guild_and_channel()
-    if not guild or channel:
+    if not guild or not channel:
         logging.error("Target guild/channel could not be resolved during startup.")
         return
 

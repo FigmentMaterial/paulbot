@@ -142,7 +142,10 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 VOICE_FAIL_COUNT = 0
 VOICE_FAIL_WINDOW_START = 0.0
 voice_connect_lock = asyncio.Lock()
-_last_connect_ts = 0.0
+
+# Only used to suppress reconnects after failures/backoff conditions.
+# This avoids blocking a legitimate reconnect after a normal disconnect.
+_next_connect_allowed_ts = 0.0
 CONNECT_COOLDOWN = 20   # seconds between attempts; normal cooldown
 SICK_BACKOFF = 90   # when Discord returns 4006 or empty modes
 
@@ -247,19 +250,78 @@ async def fetch_message_stats(channel):
 async def on_ready():
     logging.info("Logged in as %s", bot.user.name)
     logging.info("%s is ready to receive commands!", bot.user.name)
-    
-    # Convert environmental variables to integers
-    try:
-        guild_id = int(GUILD_ID)
-        channel_id = int(VOICE_CHANNEL_ID)
-    except Exception as e:
-        logging.exception(f"Error converting IDs to integers: {e}")
+
+    if not read_quotes.is_running():
+        read_quotes.start()
+
+    guild, channel = get_target_guild_and_channel()
+    if not guild or channel:
+        logging.error("Target guild/channel could not be resolved during startup.")
         return
+
+    # If the bot starts while people are already in the channel, connect once.
+    if channel_has_humans(channel):
+        logging.info("Humans already present in target voice channel in startup; attempting to connect.")
+        ok = await reconnect_voice_client()
+        if not ok:
+            logging.warning("Startup voice connect failed; will retry when loop/event triggers.")
+    else:
+        logging.info("Target voice channel is empty on startup; waiting for someone to join.")
     
-    ok = await reconnect_voice_client()
-    if not ok:
-        logging.error("Initial voice connect failed; read_quotes will keep retrying.")
-    read_quotes.start()
+  ## Commenting out to test new function for voice channel joining
+  # Convert environmental variables to integers
+  #  try:
+  #      guild_id = int(GUILD_ID)
+  #      channel_id = int(VOICE_CHANNEL_ID)
+  #  except Exception as e:
+  #      logging.exception(f"Error converting IDs to integers: {e}")
+  #      return
+    
+  #  ok = await reconnect_voice_client()
+  #  if not ok:
+  #      logging.error("Initial voice connect failed; read_quotes will keep retrying.")
+  #  read_quotes.start()
+
+  # Trigger event for bot to join voice channel when a human joins the target voice channel.
+@bot.event
+@discord_exception_handler
+async def on_voice_state_update(member, before, after):
+      # Ignore bots so another bot joining doesn't wake PaulBot up.
+      if member.bot:
+          return
+
+      guild, target_channel = get_target_guild_and_channel()
+      if not guild or not target_channel:
+          return
+
+      if member.guild.id != guild.id:
+          return
+
+      target_channel_id = target_channel.id
+      before_id = before.channel.id if before.channel else None
+      after_id = after.channel.id if after.channel else None
+
+      joined_target = after_id == target_channel_id and before_id != target_channel_id
+      left_target = before_id == target_channel_id and after_id != target_channel_id
+
+      if joined_target:
+          logging.info(
+              "Member '%s' joined target voice channel '%s'; ensuring Paulbot is connected.",
+              member,
+              target_channel.name
+              )
+
+          vc = discord.utils.get(bot.voice_clients, guild=guild)
+          if not vc or not vc.is_connected() or getattr(vc.channel, "id", None) != target_channel_id:
+              await reconnect_voice_client()
+              
+      elif left_target:
+          if not channel_has_humans(target_channel):
+              logging.info(
+                  "Last human left target voice channel '%s'; disconnecting Paulbot.",
+                  target_channel.name
+              )
+              await disconnect_voice_client("channel empty")
 
 # Helper function to check if a file is in use
 def is_file_in_use(filepath):
@@ -371,36 +433,82 @@ def convert_tts_to_mp3(quote):
         logging.exception(f"Error converting quote to MP3 file: {e}")
         return False
         
+# Helper to verify Discord server and voice channel for TTS
+def get_target_guild_and_channel():
+    try:
+        guild = bot.get_guild(int(GUILD_ID))
+        channel = guild.get_channel(int(VOICE_CHANNEL_ID)) if guild else None
+        return guild, channel
+    except Exception:
+        logging.exception("Failed to resolve target guild/channel from environment variables.")
+        return None, None
+
+# Helper to trigger TTS based on presence in voice channel
+def channel_has_humans(channel):
+    return bool(channel and any(not member.bot for member in channel.members))
+
+# Helper to disconnect voice client
+async def disconnect_voice_client(reason=""):
+    try:
+        guild, _ = get_target_guild_and_channel()
+        vc = discord.utils.get(bot.voice_clients, guild=guild) if guild else None
+
+        if vc and vc.is_connected():
+            if vc.is_playing():
+                vc.stop()
+            logging.info("Disconnecting voice client%s", f"({reason})" if reason else "")
+            await vc.disconnect(force=True)
+
+        return True
+    except Exception:
+        logging.exception("Unexpected error in disconnect_voice_client")
+        return False
+
 # Task to read quotes at intervals
 @tasks.loop(minutes=1)  # Change interval as desired
 async def read_quotes():
     global VOICE_FAIL_COUNT, VOICE_FAIL_WINDOW_START
+
     try:
-        guild = bot.get_guild(int(GUILD_ID))
+        guild, channel = get_target_guild_and_channel()
+        if not guild or channel:
+            logging.error("Target guild/channel unavailable for read_quotes.")
+            return
+
         vc = discord.utils.get(bot.voice_clients, guild=guild)
 
-        # Quick helper to track failures in a short window
         def mark_failure():
             global VOICE_FAIL_COUNT, VOICE_FAIL_WINDOW_START
             now = time.monotonic()
-            if VOICE_FAIL_WINDOW_START == 0.0 or (now - VOICE_FAIL_WINDOW_START) > 180: # 3 minute window
+            if VOICE_FAIL_WINDOW_START == 0.0 or (now - VOICE_FAIL_WINDOW_START) > 180:
                 VOICE_FAIL_WINDOW_START = now
                 VOICE_FAIL_COUNT = 1
             else:
                 VOICE_FAIL_COUNT += 1
 
-        # Ensure connected
-        if not vc or not vc.is_connected():
-            logging.warning("Voice client is not connected. Reconnecting...")
+        # If no humans are in the target channel, do nothing and disconnect if still lingering.
+        if not channel_has_humans(channel):
+            if vc and vc.is_connected():
+                logging.info("No human listeners in target voice channel; disconnecting.")
+                await disconnect_voice_client("no listeners")
+            return
+
+        # Humans are present; ensure connected to the correct channel.
+        if not vc or not vc.is_connected() or getattr(vc.channel, "id", None) != channel.id:
+            logging.info("Humans detected in target voice channel; ensuring voice connection.")
             ok = await reconnect_voice_client()
             if not ok:
                 return
-            # refresh vc reference after reconnect
+
             vc = discord.utils.get(bot.voice_clients, guild=guild)
             if not vc or not vc.is_connected():
                 return
 
-        # Prepare and play audio
+        # Don't stack playback on top of itself.
+        if vc.is_playing():
+            logging.info("Voice client is already playing audio; skipping this tick.")
+            return
+
         filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
         if not filtered_quotes:
             logging.warning("No quotes available for playback.")
@@ -408,14 +516,14 @@ async def read_quotes():
 
         quote = random.choice(filtered_quotes)
         logging.info("Selected quote to read aloud: %s", quote)
-            
-        # Perform TTS conversion to MP3
+
+        # Perform TTS converstion to MP3
         success = await async_convert_tts_to_mp3(quote)
         if not success:
             logging.error("quote.mp3 was not created successfully")
             mark_failure()
             return
-            
+
         # Convert MP3 file to WAV
         try:
             audio = AudioSegment.from_mp3('quote.mp3')
@@ -425,62 +533,159 @@ async def read_quotes():
             mark_failure()
             return
 
-        # Add a short delay to ensure the file systems recognizes the new file.
+        # Give the filesystem a moment
         await asyncio.sleep(1)
-            
+
+        # Re-check channel occupancy right before playback
+        if not channel_has_humans(channel):
+            logging.info("Listeners left before playback started; skipping and disconnecting.")
+            await disconnect_voice_client("listeners left before playback")
+            return
+
         try:
             if not vc.is_connected():
                 logging.warning("Lost voice connection before playback; skipping this tick.")
                 mark_failure()
                 return
+
             source = discord.FFmpegPCMAudio('quote.wav')
-            if not vc.is_playing():
-                vc.play(source)
-                # Wait for the playback to finish before proceeding
-                while vc.is_playing():
-                    await asyncio.sleep(1)
+            vc.play(source)
+
+            while vc.is_playing():
+                await asyncio.sleep(1)
+
         except Exception:
             logging.exception("Error in audio playback")
             mark_failure()
-                
+
         finally:
-            # Clean up temporary files
             try:
-               delete_file_with_retry('quote.mp3')
-               delete_file_with_retry('quote.wav')
+                delete_file_with_retry('quote.mp3')
+                delete_file_with_retry('quote.wav')
             except Exception:
                 logging.exception("Error cleaning up audio files")
+
     except Exception:
         logging.exception("Unexpected error in read_quotes loop")
 
 
-async def reconnect_voice_client():
-    global _last_connect_ts
-    now = asyncio.get_running_loop().time()
+ # Commenting out existing TTS functions to test new features
+ #   try:
+ #       guild = bot.get_guild(int(GUILD_ID))
+ #       vc = discord.utils.get(bot.voice_clients, guild=guild)
 
-    # Cooldown: avoid hammering when Discord is unhappy
-    if now - _last_connect_ts < CONNECT_COOLDOWN:
-        logging.debug("Reconnect suppressed by cooldown.")
+        # Quick helper to track failures in a short window
+ #       def mark_failure():
+ #           global VOICE_FAIL_COUNT, VOICE_FAIL_WINDOW_START
+ #           now = time.monotonic()
+ #           if VOICE_FAIL_WINDOW_START == 0.0 or (now - VOICE_FAIL_WINDOW_START) > 180: # 3 minute window
+ #               VOICE_FAIL_WINDOW_START = now
+ #               VOICE_FAIL_COUNT = 1
+ #           else:
+ #               VOICE_FAIL_COUNT += 1
+
+        # Ensure connected
+ #       if not vc or not vc.is_connected():
+ #           logging.warning("Voice client is not connected. Reconnecting...")
+ #           ok = await reconnect_voice_client()
+ #           if not ok:
+ #               return
+            # refresh vc reference after reconnect
+ #           vc = discord.utils.get(bot.voice_clients, guild=guild)
+ #           if not vc or not vc.is_connected():
+ #               return
+
+        # Prepare and play audio
+ #       filtered_quotes = [quote for quote in quotes if not contains_url(quote)]
+ #       if not filtered_quotes:
+ #           logging.warning("No quotes available for playback.")
+ #           return
+
+ #       quote = random.choice(filtered_quotes)
+ #       logging.info("Selected quote to read aloud: %s", quote)
+            
+        # Perform TTS conversion to MP3
+ #       success = await async_convert_tts_to_mp3(quote)
+ #       if not success:
+ #           logging.error("quote.mp3 was not created successfully")
+ #           mark_failure()
+ #           return
+            
+        # Convert MP3 file to WAV
+ #       try:
+ #           audio = AudioSegment.from_mp3('quote.mp3')
+ #           audio.export('quote.wav', format='wav')
+ #       except Exception:
+ #           logging.exception("Error converting MP3 to WAV")
+ #           mark_failure()
+ #           return
+
+        # Add a short delay to ensure the file systems recognizes the new file.
+ #       await asyncio.sleep(1)
+            
+ #       try:
+ #           if not vc.is_connected():
+ #               logging.warning("Lost voice connection before playback; skipping this tick.")
+ #               mark_failure()
+ #               return
+ #           source = discord.FFmpegPCMAudio('quote.wav')
+ #           if not vc.is_playing():
+ #               vc.play(source)
+                # Wait for the playback to finish before proceeding
+ #               while vc.is_playing():
+ #                   await asyncio.sleep(1)
+ #       except Exception:
+ #           logging.exception("Error in audio playback")
+ #           mark_failure()
+                
+ #       finally:
+            # Clean up temporary files
+ #           try:
+ #              delete_file_with_retry('quote.mp3')
+ #              delete_file_with_retry('quote.wav')
+ #           except Exception:
+ #               logging.exception("Error cleaning up audio files")
+ #   except Exception:
+ #       logging.exception("Unexpected error in read_quotes loop")
+
+async def reconnect_voice_client():
+    global _next_connect_allowed_ts
+
+    loop = asyncio.get_running_loop()
+    now = loop.time()
+
+    if now < _next_connect_allowed_ts:
+        logging.debug("Reconnect suppressed by backoff.")
         return False
 
     async with voice_connect_lock:
-        now = asyncio.get_running_loop().time()
-        if now - _last_connect_ts < CONNECT_COOLDOWN:
-            logging.debug("Reconnect suppressed by cooldown (inside lock).")
+        now = loop.time()
+        if now < _next_connect_allowed_ts:
+            logging.debug("Reconnect suppressed by backoff (inside lock).")
             return False
-        _last_connect_ts = now
 
         try:
-            guild = bot.get_guild(int(GUILD_ID))
-            channel = guild.get_channel(int(VOICE_CHANNEL_ID)) if guild else None
+            guild, channel = get_target_guild_and_channel()
             if not guild or not channel:
                 logging.error("Guild or voice channel not found.")
+                _next_connect_allowed_ts = loop.time() + CONNECT_COOLDOWN
                 return False
 
             vc = discord.utils.get(bot.voice_clients, guild=guild)
+
+            # Already connected to the correct place
             if vc and vc.is_connected():
-                logging.info("Voice already connected to: %s", getattr(vc.channel, "name", "?"))
-                return True
+                if getattr(vc.channel, "id", None) == channel.id:
+                    logging.info("Voice already connected to: %s", getattr(vc.channel, "name", "?"))
+                    return True
+
+                # Connected somewhere else in the same guild; move it.
+                try:
+                    await vc.move_to(channel)
+                    logging.info("Moved voice client to target channel %s", channel.name)
+                    return True
+                except Exception:
+                    logging.exception("Failed to move existing voice client to target channel.")
 
             # If there is a stale VC object, clean it up
             if vc and not vc.is_connected():
@@ -490,43 +695,127 @@ async def reconnect_voice_client():
                 except Exception:
                     logging.exception("Error while force-disconnecting stale voice client.")
 
-            # IMPORTANT: let us manage reconnects; disable library auto-reconnect
             MAX_TRIES = 3
-            for attempt in range(1, MAX_TRIES +1):
+            for attempt in range(1, MAX_TRIES + 1):
                 try:
                     await channel.connect(timeout=60, reconnect=False)
                     logging.info("Connected to voice channel %s", channel.name)
+                    _next_connect_allowed_ts = 0.0
                     return True
+
                 except discord.errors.ConnectionClosed as e:
-                    # 4006 => session invalid; quarantine before next try
                     if getattr(e, "code", None) == 4006:
                         logging.warning("Voice session invalid (4006). Backing off for %ss", SICK_BACKOFF)
-                        _last_connect_ts = asyncio.get_running_loop().time() - CONNECT_COOLDOWN + SICK_BACKOFF
+                        _next_connect_allowed_ts = loop.time() + SICK_BACKOFF
                         return False
-                    logging.exception("ConnectionClosed on attempt %s/%s (code=%s)", attempt, MAX_TRIES, getattr(e, "code", None))
+
+                    logging.exception(
+                        "ConnectionClosed on attempt %s/%s (code=%s)",
+                        attempt,
+                        MAX_TRIES,
+                        getattr(e, "code", None)
+                    )
+
                 except Exception as e:
-                    #Empty-modes signature shows as IndexError or 'modes[0]' in msg
                     msg = str(e)
+
                     if isinstance(e, IndexError) or "mode = modes[0]" in msg or "list index out of range" in msg:
                         logging.warning("Empty encryption modes from voice node. Backing off for %ss.", SICK_BACKOFF)
-                        _last_connect_ts = asyncio.get_running_loop().time() - CONNECT_COOLDOWN + SICK_BACKOFF
+                        _next_connect_allowed_ts = loop.time() + SICK_BACKOFF
                         return False
-                    # Other transient issues (e.g., 522 handshake)
+
                     if "WSServerHandshakeError" in msg or "Invalid response status" in msg or "522" in msg:
                         logging.warning("Voice node handshake issue. Backing off for %ss.", SICK_BACKOFF)
-                        _last_connect_ts = asyncio.get_running_loop().time() - CONNECT_COOLDOWN + SICK_BACKOFF
+                        _next_connect_allowed_ts = loop.time() + SICK_BACKOFF
                         return False
+
                     logging.exception("Error during connection attempt %s/%s", attempt, MAX_TRIES)
 
-                # back off with a little jitter
-                await asyncio.sleep(5 + attempt*2)
+                await asyncio.sleep(5 + attempt * 2)
 
             logging.error("Failed to connect to voice channel after %s attempts.", MAX_TRIES)
+            _next_connect_allowed_ts = loop.time() + CONNECT_COOLDOWN
             return False
 
         except Exception:
             logging.exception("Unexpected error in reconnect_voice_client")
+            _next_connect_allowed_ts = loop.time() + CONNECT_COOLDOWN
             return False
+
+# Commenting out original reconnect function to test new features
+#async def reconnect_voice_client():
+#    global _last_connect_ts
+#    now = asyncio.get_running_loop().time()
+
+    # Cooldown: avoid hammering when Discord is unhappy
+#    if now - _last_connect_ts < CONNECT_COOLDOWN:
+#        logging.debug("Reconnect suppressed by cooldown.")
+#        return False
+
+#    async with voice_connect_lock:
+#        now = asyncio.get_running_loop().time()
+#        if now - _last_connect_ts < CONNECT_COOLDOWN:
+#            logging.debug("Reconnect suppressed by cooldown (inside lock).")
+#            return False
+#        _last_connect_ts = now
+
+#        try:
+#            guild = bot.get_guild(int(GUILD_ID))
+#            channel = guild.get_channel(int(VOICE_CHANNEL_ID)) if guild else None
+#            if not guild or not channel:
+#                logging.error("Guild or voice channel not found.")
+#                return False
+
+#            vc = discord.utils.get(bot.voice_clients, guild=guild)
+#            if vc and vc.is_connected():
+#                logging.info("Voice already connected to: %s", getattr(vc.channel, "name", "?"))
+#                return True
+
+            # If there is a stale VC object, clean it up
+#            if vc and not vc.is_connected():
+#                try:
+#                    await vc.disconnect(force=True)
+#                    logging.info("Stale voice client disconnected (force=True).")
+#                except Exception:
+#                    logging.exception("Error while force-disconnecting stale voice client.")
+
+            # IMPORTANT: let us manage reconnects; disable library auto-reconnect
+#            MAX_TRIES = 3
+#            for attempt in range(1, MAX_TRIES +1):
+#                try:
+#                    await channel.connect(timeout=60, reconnect=False)
+#                    logging.info("Connected to voice channel %s", channel.name)
+#                    return True
+#                except discord.errors.ConnectionClosed as e:
+                    # 4006 => session invalid; quarantine before next try
+#                    if getattr(e, "code", None) == 4006:
+#                        logging.warning("Voice session invalid (4006). Backing off for %ss", SICK_BACKOFF)
+#                        _last_connect_ts = asyncio.get_running_loop().time() - CONNECT_COOLDOWN + SICK_BACKOFF
+#                        return False
+#                    logging.exception("ConnectionClosed on attempt %s/%s (code=%s)", attempt, MAX_TRIES, getattr(e, "code", None))
+#                except Exception as e:
+                    #Empty-modes signature shows as IndexError or 'modes[0]' in msg
+#                    msg = str(e)
+#                    if isinstance(e, IndexError) or "mode = modes[0]" in msg or "list index out of range" in msg:
+#                        logging.warning("Empty encryption modes from voice node. Backing off for %ss.", SICK_BACKOFF)
+#                        _last_connect_ts = asyncio.get_running_loop().time() - CONNECT_COOLDOWN + SICK_BACKOFF
+#                        return False
+                    # Other transient issues (e.g., 522 handshake)
+#                    if "WSServerHandshakeError" in msg or "Invalid response status" in msg or "522" in msg:
+#                        logging.warning("Voice node handshake issue. Backing off for %ss.", SICK_BACKOFF)
+#                        _last_connect_ts = asyncio.get_running_loop().time() - CONNECT_COOLDOWN + SICK_BACKOFF
+#                        return False
+#                    logging.exception("Error during connection attempt %s/%s", attempt, MAX_TRIES)
+
+                # back off with a little jitter
+#                await asyncio.sleep(5 + attempt*2)
+
+#            logging.error("Failed to connect to voice channel after %s attempts.", MAX_TRIES)
+#            return False
+
+#        except Exception:
+#            logging.exception("Unexpected error in reconnect_voice_client")
+#            return False
             
 # Trigger events based on commands typed in Discord messages
 @bot.event

@@ -339,7 +339,6 @@ async def on_voice_state_update(member, before, after):
             logging.info("First human joined target voice channel; playing immediate quote.")
             played = await play_random_quote_once()
 
-            global next_quote_at
             if played:
                 next_quote_at = time.monotonic() + 60
             else:

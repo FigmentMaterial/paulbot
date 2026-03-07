@@ -366,19 +366,6 @@ def delete_file_with_retry(filepath, retries=5, delay=1):
 
     logging.error(f"Failed to delete {filepath} after {retries} attempts.")
     return False
-    
-# Helper function to delete a file with retries - used for temporary audio files
-def delete_file_with_retry(filepath, retries=5, delay=1):
-    for attempt in range(retries):
-        if not is_file_in_use(filepath):
-            try:
-                os.remove(filepath)
-                return True
-            except Exception as e:
-                logging.exception(f"Attempt {attempt + 1}: Failed to delete {filepath}. Error: {e}")
-        time.sleep(delay)
-    logging.error(f"Failed to delete {filepath} after {retries} attempts.")
-    return False
 
 # Preprocess quote for gTTS tokenizing
 def preprocess_text(quote):

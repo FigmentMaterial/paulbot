@@ -464,8 +464,27 @@ async def disconnect_voice_client(reason=""):
         logging.exception("Unexpected error in disconnect_voice_client")
         return False
 
+async def play_audio_file(vc, filepath):
+    loop = asyncio.get_running_loop()
+    finished = asyncio.Event()
+    player_error = {"error": None}
+
+    def after_playback(error):
+        if error:
+            player_error["error"] = error
+            logging.error("Voice playback thread error: %r", error)
+        loop.call_soon_threadsafe(finished.set)
+
+    source = await discord.FFmpegOpusAudio.from_probe(filepath, method="fallback")
+    vc.play(source, after=after_playback)
+
+    await finished.wait()
+
+    if player_error["error"] is not None:
+        raise player_error["error"]
+
 # Task to read quotes at intervals
-@tasks.loop(minutes=1)  # Change interval as desired
+@tasks.loop(minutes=1)
 async def read_quotes():
     global VOICE_FAIL_COUNT, VOICE_FAIL_WINDOW_START
 
@@ -486,14 +505,12 @@ async def read_quotes():
             else:
                 VOICE_FAIL_COUNT += 1
 
-        # If no humans are in the target channel, do nothing and disconnect if still lingering.
         if not channel_has_humans(channel):
             if vc and vc.is_connected():
                 logging.info("No human listeners in target voice channel; disconnecting.")
                 await disconnect_voice_client("no listeners")
             return
 
-        # Humans are present; ensure connected to the correct channel.
         if not vc or not vc.is_connected() or getattr(vc.channel, "id", None) != channel.id:
             logging.info("Humans detected in target voice channel; ensuring voice connection.")
             ok = await reconnect_voice_client()
@@ -504,7 +521,6 @@ async def read_quotes():
             if not vc or not vc.is_connected():
                 return
 
-        # Don't stack playback on top of itself.
         if vc.is_playing():
             logging.info("Voice client is already playing audio; skipping this tick.")
             return
@@ -517,26 +533,14 @@ async def read_quotes():
         quote = random.choice(filtered_quotes)
         logging.info("Selected quote to read aloud: %s", quote)
 
-        # Perform TTS converstion to MP3
         success = await async_convert_tts_to_mp3(quote)
         if not success:
             logging.error("quote.mp3 was not created successfully")
             mark_failure()
             return
 
-        # Convert MP3 file to WAV
-        try:
-            audio = AudioSegment.from_mp3('quote.mp3')
-            audio.export('quote.wav', format='wav')
-        except Exception:
-            logging.exception("Error converting MP3 to WAV")
-            mark_failure()
-            return
+        await asyncio.sleep(0.5)
 
-        # Give the filesystem a moment
-        await asyncio.sleep(1)
-
-        # Re-check channel occupancy right before playback
         if not channel_has_humans(channel):
             logging.info("Listeners left before playback started; skipping and disconnecting.")
             await disconnect_voice_client("listeners left before playback")
@@ -548,11 +552,16 @@ async def read_quotes():
                 mark_failure()
                 return
 
-            source = discord.FFmpegPCMAudio('quote.wav')
-            vc.play(source)
+            logging.info(
+                "Starting voice playback in channel '%s' (connected=%s, playing=%s)",
+                channel.name,
+                vc.is_connected(),
+                vc.is_playing()
+            )
 
-            while vc.is_playing():
-                await asyncio.sleep(1)
+            await play_audio_file(vc, "quote.mp3")
+
+            logging.info("Voice playback completed successfully.")
 
         except Exception:
             logging.exception("Error in audio playback")
@@ -560,10 +569,9 @@ async def read_quotes():
 
         finally:
             try:
-                delete_file_with_retry('quote.mp3')
-                delete_file_with_retry('quote.wav')
+                delete_file_with_retry("quote.mp3")
             except Exception:
-                logging.exception("Error cleaning up audio files")
+                logging.exception("Error cleaning up audio file")
 
     except Exception:
         logging.exception("Unexpected error in read_quotes loop")

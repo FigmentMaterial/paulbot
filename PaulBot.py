@@ -58,9 +58,9 @@ def setup_logging():
     logging.getLogger('websockets').setLevel(logging.WARNING)
 
     # TEMPORARY: Debugging Discord voice issues
-    logging.getLogger('discord.voice_client').setLevel(logging.DEBUG)
-    logging.getLogger('discord.voice_state').setLevel(logging.DEBUG)
-    logging.getLogger('discord.gateway').setLevel(logging.DEBUG)
+#    logging.getLogger('discord.voice_client').setLevel(logging.DEBUG)
+#    logging.getLogger('discord.voice_state').setLevel(logging.DEBUG)
+#    logging.getLogger('discord.gateway').setLevel(logging.DEBUG)
 
     logging.getLogger(__name__).info(
         "Logging initialized level=%s file=%s (stdout + rotating file)",

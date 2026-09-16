@@ -3,7 +3,7 @@
         "177902880714522624": 833,
         "405099653357502466": 90,
         "466034731784601610": 322,
-        "178020850061017088": 617,
+        "178020850061017088": 618,
         "197947126133555200": 52,
         "241811288332828672": 35,
         "300378168970182657": 22,
@@ -1018,6 +1018,10 @@
         "To be fair , this game fucks you if you go AFK lol": {
             "content": "To be fair , this game fucks you if you go AFK lol",
             "reactions": 2
+        },
+        "Wait, so you are allergic to eggs. Are you allergic to chicken as well?": {
+            "content": "Wait, so you are allergic to eggs. Are you allergic to chicken as well?",
+            "reactions": 1
         }
     },
     "fetch_completed": true

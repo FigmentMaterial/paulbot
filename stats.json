@@ -1,6 +1,6 @@
 {
     "paul_commands": {
-        "177902880714522624": 835,
+        "177902880714522624": 836,
         "405099653357502466": 90,
         "466034731784601610": 322,
         "178020850061017088": 622,
@@ -1021,6 +1021,10 @@
         },
         "Wait, so you are allergic to eggs. Are you allergic to chicken as well?": {
             "content": "Wait, so you are allergic to eggs. Are you allergic to chicken as well?",
+            "reactions": 1
+        },
+        "Yeah, I saw that and was like \" brugh \"": {
+            "content": "Yeah, I saw that and was like \" brugh \"",
             "reactions": 1
         }
     },

@@ -817,7 +817,7 @@
         },
         "Bitch": {
             "content": "Bitch",
-            "reactions": 7
+            "reactions": 9
         },
         "Speaking of which, I gotta grab a chicken bake and some gas": {
             "content": "Speaking of which, I gotta grab a chicken bake and some gas",
@@ -1025,6 +1025,10 @@
         },
         "Yeah, I saw that and was like \" brugh \"": {
             "content": "Yeah, I saw that and was like \" brugh \"",
+            "reactions": 1
+        },
+        "Eh, tomato spaghettio": {
+            "content": "Eh, tomato spaghettio",
             "reactions": 1
         }
     },

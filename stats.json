@@ -1,9 +1,9 @@
 {
     "paul_commands": {
-        "177902880714522624": 840,
+        "177902880714522624": 842,
         "405099653357502466": 90,
         "466034731784601610": 322,
-        "178020850061017088": 641,
+        "178020850061017088": 642,
         "197947126133555200": 52,
         "241811288332828672": 35,
         "300378168970182657": 22,
@@ -745,7 +745,7 @@
         },
         "https://tenor.com/view/beclear-louise-louisebelcher-bobsburgers-gif-6159821": {
             "content": "https://tenor.com/view/beclear-louise-louisebelcher-bobsburgers-gif-6159821",
-            "reactions": 1
+            "reactions": 7
         },
         "I will light my ball hair on fire if that ever happens": {
             "content": "I will light my ball hair on fire if that ever happens",
@@ -1050,6 +1050,10 @@
         "Was pondering my existence and feeling old on the drive to the gym and this banger comes on": {
             "content": "Was pondering my existence and feeling old on the drive to the gym and this banger comes on",
             "reactions": 1
+        },
+        "https://media.discordapp.net/attachments/446214795352342530/1393451643311362048/RDT_20250711_21391444806440644835467.gif?ex=687a78b8&is=68792738&hm=ae3eb6e33b6e9bcc74fadfce37d47973d8da5cba55492b66b33374e4cfcfc718&=": {
+            "content": "https://media.discordapp.net/attachments/446214795352342530/1393451643311362048/RDT_20250711_21391444806440644835467.gif?ex=687a78b8&is=68792738&hm=ae3eb6e33b6e9bcc74fadfce37d47973d8da5cba55492b66b33374e4cfcfc718&=",
+            "reactions": 2
         }
     },
     "fetch_completed": true

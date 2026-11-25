@@ -1,4 +1,4 @@
-﻿# PaulBot - Quote Generator and Discord Companion
+# PaulBot - Quote Generator and Discord Companion
 
 **PaulBot** is a custom-built Discord bot designed for a private server. It manages a rotating bank of quotes, tracks usage and reactions, and provides a small suite of commands for light automation and entertainment. Built in Python using `discord.py`, it’s backed by simple JSON storage and Docker deployment.
 
@@ -8,7 +8,7 @@
 
 ---
 
-## 📄 Table of Contents
+## Table of Contents
 
 - [Features](#features)
 - [Setup](#setup)
@@ -16,27 +16,28 @@
   - [Installation](#installation)
   - [Running the Bot](#running-the-bot-docker)
       - [Automating Git Sync](#automating-git-sync-optional)
-- [Configuration](#%EF%B8%8Fconfiguration)
+- [Configuration](#configuration)
   - [Environment Variables](#environment-variables)
   - [File Bind Mounts](#file-bind-mounts)
 - [Commands](#commands)
-- [File Structure](#%EF%B8%8Ffile-structure)
+- [File Structure](#file-structure)
   - [Root Directory Layout](#root-directory-layout)
-  - [Ignored at Runtime](#ignored-at-runtime)
+  - [Runtime Files and Version Control](#runtime-files-and-version-control)
 - [Logging & Error Handling](#logging--error-handling)
   - [What Gets Logged](#what-gets-logged)
   - [Log Location](#log-location)
   - [Fallback Behavior](#fallback-behavior)
 - [Development & Contribution](#development--contribution)
   - [Local Development](#local-development)
-  - [Contributing Code](#%EF%B8%8Fcontributing-code)
+  - [Contributing Code](#contributing-code)
   - [Testing](#testing)
+  - [Dependency Maintenance](#dependency-maintenance)
 - [Security Disclaimer](#security-disclaimer)
 - [License](#license)
 
 ---
 
-## ✨Features
+## Features
 
 - Add, retrieve, and randomly generate Discord quotes
 - Track command usage per user
@@ -47,133 +48,179 @@
 
 ---
 
-## ⚙Setup
+## Setup
 
-### 🧪Environment
+### Environment
 
-- **Python:** 3.11+ recommended
+- **Python:** 3.11 (current Docker runtime; newer Python versions have not been validated)
 - **Docker:** used for deployment
-- **Linux host:** required
-- **Discord bot token** and **guild ID** from [Discord Developer Portal](https://discord.com/developers/applications)
+- **Linux host:** required for the provided deployment scripts
+- **Git, Python 3 and `flock`:** required on the host for automated Git sync
+- **Discord bot token, guild ID and voice channel ID:** configure using the [Discord Developer Portal](https://discord.com/developers/applications) and your server
+- **FFmpeg:** installed by the Dockerfile; required separately for local development with voice playback
 
-### 📦Installation
+### Installation
 
-1. Install Docker (Linux/macOS/Windows):
+These instructions assume a Linux host and a deployment account with access to Docker and write access to the repository and persistent files. Run commands as that account unless `sudo` is shown. Do not reinitialize an existing installation.
 
-    Follow the official Docker installation guide for your platform:
-    [https://docs.docker.com/get-docker](https://docs.docker.com/get-docker)
+1. Install Docker using the [official installation guide](https://docs.docker.com/get-docker/). Install Git, Python 3 and `flock` if using automated sync.
 
-2. Clone the PaulBot repository to /etc/paulbot:
+2. For a fresh installation, create the repository directory and clone PaulBot:
 
     ```bash
-    sudo mkdir /etc/paulbot/
+    sudo mkdir -p /etc/paulbot
+    sudo chown "$(id -u):$(id -g)" /etc/paulbot
     cd /etc/paulbot
     git clone https://github.com/FigmentMaterial/paulbot.git .
     ```
 
-3. Create a `.env` file based on the provided `.env.example` template:
+    For an existing installation, use the existing checkout instead.
+
+3. Create the credential file only if it does not already exist:
 
     ```bash
-    cp .env.example /etc/paulbot/paulbot.env
+    cd /etc/paulbot
+    if [ ! -e paulbot.env ]; then
+        (umask 077; set -C; cat .env.example > paulbot.env)
+    fi
+    chmod 600 paulbot.env
+    nano paulbot.env
     ```
 
-4. Edit `.env` with your Discord bot token, guild ID, voice channel ID, and GitHub credentials:
+    Populate the Discord token, guild ID, voice channel ID and (if using Git sync) GitHub credentials. The deployment and synchronization account must be able to read `paulbot.env`.
+
+4. Ensure the persistent JSON files exist without overwriting existing data:
 
     ```bash
-    nano /etc/paulbot/paulbot.env
-    ```
-5. Ensure `quotes.json` and `stats.json` exist in `/etc/paulbot/`:
+    if [ ! -e quotes.json ]; then
+        (set -C; printf '[]\n' > quotes.json)
+    fi
 
-    ```bash
-    echo "[]" | sudo tee /etc/paulbot/quotes.json
-    echo "{}" | sudo tee /etc/paulbot/stats.json
-    sudo chmod 664 /etc/paulbot/*.json
+    if [ ! -e stats.json ]; then
+        (set -C; printf '{}\n' > stats.json)
+    fi
+
+    chmod 664 quotes.json stats.json
     ```
-6. Ensure logs directory exists in `/var/log/paulbot`:
+
+    **Important:** The repository may already contain populated quote and statistics files. Never initialize them unconditionally. The launch script also initializes missing files, but does not repair existing malformed files. Back up existing data before attempting repairs.
+
+5. Prepare the persistent log directory:
 
     ```bash
     sudo mkdir -p /var/log/paulbot
     sudo chmod 775 /var/log/paulbot
     ```
 
-7. Build the Docker image:
+    Ensure the deployment account and container can access the paths they need. Adjust ownership or group permissions for your host if necessary.
+
+6. Build the Docker image:
 
     ```bash
     docker build -t paulbot-image .
     ```
 
-8. Run the bot using the provided launch script:
+7. Start the bot:
 
     ```bash
-    chmod +x run_paulbot.sh
+    chmod +x run_paulbot.sh paulbot_sync.sh
     ./run_paulbot.sh
     ```
 
-9. (Optional) View runtime logs:
+8. Verify the container and optionally follow the logs:
 
     ```bash
+    docker ps --filter name=paulbot
     docker logs -f paulbot
     ```
 
+    Press Ctrl+C to stop following logs without stopping PaulBot.
 
-### 🐳Running the Bot (Docker)
+### Running the Bot (Docker)
 
-PaulBot is designed to run as a self-contained Docker container with persistent data and logs handled via bind mounts.
+PaulBot runs as a self-contained Docker container with persistent data and logs handled via bind mounts.
 
-✔️ Once running, the bot will appear online in your Discord server and respond to commands like `!paul`. It will also idle in a voice channel that you configure and verbally spew random quotes on a 60-second interval.
+Once running, the bot will appear online in Discord and respond to commands like `!paul`. It joins the configured voice channel when listeners are present, reads quotes aloud, and disconnects when the last listener leaves.
 
-Once installed, you can launch the bot with:
+From `/etc/paulbot`, launch or recreate the container with:
 
 ```bash
 ./run_paulbot.sh
 ```
-This script will:
-- Stop and remove any previously running paulbot container
-- Mount your environment file, JSON data, and logs into the container
-- Start a new container using the latest paulbot-image
 
-To follow runtime logs:
+This script:
+
+- Initializes missing quote and statistics files with valid JSON, preserving existing files.
+- Checks that the credential file exists, is readable and is nonempty before removing the previous container.
+- Mounts the credential file read-only; mounts JSON data and logs read/write.
+- Recreates the container using the existing `paulbot-image` image.
+- Configures Docker log rotation and the `unless-stopped` restart policy.
+
+To deploy application or dependency changes manually, build first, then recreate the container:
+
 ```bash
-docker logs -f paulbot
+docker build -t paulbot-image . && ./run_paulbot.sh
 ```
 
-💡 If you make changes to the source code, be sure to rebuild the image:
+Building first allows the existing container to continue running if the build fails. Changing only the launch script requires container recreation, not an image rebuild.
+
+#### Automating Git Sync (Optional)
+
+The `paulbot_sync.sh` script fetches updates from GitHub, applies fast-forward changes, deploys updates when necessary, and commits and pushes validated quote and statistics data.
+
+Run it manually from the host:
+
 ```bash
-docker build -t paulbot-image .
+cd /etc/paulbot
+./paulbot_sync.sh
 ```
 
-#### 🔄Automating Git Sync (Optional)
+| Changed file | Rebuild image | Recreate container |
+|---|:---:|:---:|
+| `PaulBot.py` | Yes | Yes |
+| `requirements.txt` | Yes | Yes |
+| `Dockerfile` | Yes | Yes |
+| `.dockerignore` | Yes | Yes |
+| `run_paulbot.sh` | No | Yes |
+| `paulbot_sync.sh` | No | No |
+| `quotes.json`, `stats.json`, `README.md` | No | No |
 
-The optional `paulbot_sync.sh` script can:
+Deployment behavior:
 
-- Pull the latest changes from GitHub
-- Rebuild the Docker image if core files changed
-- Restart the container if needed
-- Commit and push updates to quotes or stats (if applicable)
+- A host-local baseline at `.git/paulbot-deployed-head` records the commit associated with the last successful build and container recreation operation (or a sync requiring neither). It is not committed to GitHub.
+- The first run without a valid baseline performs a full deployment. Subsequent runs compare deployment-related files against the recorded commit.
+- The image is built before the running container is removed. Failed builds or failed container creation leave the deployment baseline unchanged so the next sync can retry.
+- `flock` prevents overlapping runs of the updated synchronization script.
+- Divergent Git histories or conflicting local changes require manual reconciliation. The script does not force-push.
+- Before committing data, the script validates the staged JSON: `quotes.json` must be a nonempty array and `stats.json` a nonempty object. Invalid or empty data blocks the automatic commit and push. A legitimate data reset requires manual handling.
 
-To run this regularly, you can set up a cron job:
+The JSON guard protects against obvious data loss during automatic commits; it does not detect partial loss, prevent invalid incoming Git changes, or replace backups. The deployment baseline confirms successful deployment commands, not Discord connectivity or full application health. Failure-path and concurrency tests remain deferred.
+
+**Scheduled sync on Hephaestus**
+
+Hephaestus already uses systemd to run synchronization. Use the existing service and timer rather than adding a second scheduler:
+
 ```bash
-crontab -e
+sudo systemctl start paulbot-sync.service
+sudo journalctl -u paulbot-sync.service -n 100 --no-pager
+systemctl list-timers --all
 ```
 
-Add the following line to sync every hour:
-```bash
+On other hosts without systemd scheduling, an optional hourly cron job may be used instead:
+
+```cron
 0 * * * * /etc/paulbot/paulbot_sync.sh >> /var/log/paulbot/sync.log 2>&1
 ```
 
-Make sure `paulbot_sync.sh` is executable:
-```bash
-chmod +x /etc/paulbot/paulbot_sync.sh
-```
+The scheduled account needs repository write access, Docker access, readable credentials, and (for cron) permission to write the sync log. Do not configure cron and a systemd timer for the same job.
 
-⚠️ Your `.env` file must include GITHUB_USERNAME and GITHUB_TOKEN for sync to work properly.
+`paulbot.env` must include `GITHUB_USERNAME` and `GITHUB_TOKEN` for the current authenticated sync workflow. The token must have appropriate access to the repository. If modifying the sync script itself, run the updated script again after it has been pulled; the process that pulled it may still be executing the previous version.
 
-
-## 🛠️Configuration
+## Configuration
 
 PaulBot relies on both **environment variables** and **bind-mounted files** to function correctly inside its Docker container.
 
-### 🔐Environment Variables
+### Environment Variables
 
 These are stored in `/etc/paulbot/paulbot.env`, loaded into the container at runtime. Use the provided `.env.example` file as a reference.
 
@@ -190,23 +237,24 @@ These are stored in `/etc/paulbot/paulbot.env`, loaded into the container at run
 
 ---
 
-### 📁File Bind Mounts
+### File Bind Mounts
 
-The Docker container uses file bind mounts to ensure that important data — like quotes, stats, logs, and environment variables — is stored outside the container.  
-This makes the data **persistent across container rebuilds or removals**, preserving state and configuration reliably.
+Bind mounts preserve application data and configuration across container rebuilds and removals. `run_paulbot.sh` initializes missing JSON files and checks credentials before replacing the container.
 
-These files must be present on the host and are mounted into the container by the `run_paulbot.sh` launch script.
+| Host path | Container path | Access | Purpose |
+|---|---|---|---|
+| `/etc/paulbot/quotes.json` | `/app/quotes.json` | Read/write | Persistent quotes |
+| `/etc/paulbot/stats.json` | `/app/stats.json` | Read/write | Persistent statistics |
+| `/etc/paulbot/paulbot.env` | `/app/.env` | Read-only | Environment configuration |
+| `/var/log/paulbot` | `/app/logs` | Read/write | Persistent application logs |
+| `/etc/localtime` | `/etc/localtime` | Read-only | Host local time |
+| `/etc/timezone` | `/etc/timezone` | Read-only | Host timezone |
 
-| Host Path                   | Container Path     | Description                      |
-|----------------------------|--------------------|----------------------------------|
-| `/etc/paulbot/quotes.json` | `/app/quotes.json` | Persistent storage of quotes     |
-| `/etc/paulbot/stats.json`  | `/app/stats.json`  | Persistent usage statistics      |
-| `/etc/paulbot/paulbot.env` | `/app/.env`        | Environment configuration        |
-| `/var/log/paulbot`         | `/app/logs`        | Directory for application logs   |
+The read-only credential mount prevents writes from inside the container; it does not prevent the application from reading credentials. Keep host file permissions restrictive.
 
-Ensure all files and the log directory have the correct permissions, as shown in the [Installation](#installation) section.
+See [Installation](#installation) for host path preparation.
 
-## 💬Commands
+## Commands
 
 PaulBot responds to the following text commands, all prefixed with `!` in Discord:
 
@@ -222,45 +270,41 @@ PaulBot responds to the following text commands, all prefixed with `!` in Discor
 Quotes are stored in `quotes.json`, and stats are recorded in `stats.json`.  
 Some commands (like `!fetch`) may require elevated permissions, including access to message history.
 
-## 🗂️File Structure
+## File Structure
 
-PaulBot’s repository is intentionally lightweight. Most files serve either runtime logic, configuration, or persistent data handling. Sensitive and persistent files are **bind-mounted** and excluded from version control.
+PaulBot's repository is intentionally lightweight. Credentials and logs stay outside version control. In the private PaulBot repository, the JSON data files are intentionally tracked for synchronization.
 
-### 📁Root Directory Layout
-```
-/etc/paulbot/ 
- ├── PaulBot.py         # Main bot source code
- ├── run_paulbot.sh     # Launch script for building/running the Docker container
- ├── paulbot_sync.sh    # (Optional) Sync script for git pull + container restart
- ├── requirements.txt   # Python dependencies for discord.py and logging
- ├── Dockerfile         # Docker image configuration
- ├── .env.example       # Template file for environment variables
- ├── quotes.json        # Stores saved quotes (mounted at runtime)
- ├── stats.json         # Tracks command/reaction stats (mounted at runtime)
+### Root Directory Layout
+
+```text
+/etc/paulbot/
+ ├── PaulBot.py          # Main bot source code
+ ├── run_paulbot.sh      # Container launch/recreation script
+ ├── paulbot_sync.sh     # Git synchronization and deployment script
+ ├── requirements.txt    # Pinned Python dependencies
+ ├── Dockerfile          # Docker image configuration
+ ├── .dockerignore       # Docker build-context exclusions
+ ├── .gitignore          # Git exclusions
+ ├── .env.example       # Environment variable template
+ ├── paulbot.env        # Host credentials (never commit)
+ ├── quotes.json        # Persistent quote data
+ ├── stats.json         # Persistent statistics
  └── README.md          # Project documentation
- ```
+```
 
-### 🛑Ignored at Runtime
+The deployment baseline and synchronization lock reside in `.git/`, and application logs reside in `/var/log/paulbot/`.
 
-These files are expected to exist at runtime but **should not be committed**:
+### Runtime Files and Version Control
 
-- `.env` → Contains sensitive credentials (token, GitHub auth)
-- `quotes.json` → User-generated content
-- `stats.json` → Dynamic usage data
-- Log files in `/var/log/paulbot/` → App output and diagnostics
+Never commit real credential files (`paulbot.env`, `.env`), tokens or runtime logs. Ensure your `.gitignore` and `.dockerignore` exclude credentials and other sensitive local files.
 
-All of the above are excluded via `.gitignore`, and most are created during [Installation](#installation).
+In this private repository, `quotes.json` and `stats.json` are tracked intentionally so the synchronization script can commit and push updates. If you create a public-facing fork, remove or sanitize existing private data, exclude future private data from version control, and disable or adapt the synchronization script's data-commit logic. Adding an already tracked file to `.gitignore` alone does not remove it from version control or history.
 
-**Note:** In this repository, `quotes.json` and `stats.json` are _not_ excluded by default.  
-This is intentional to allow sharing data with a specific friend group.  
-If you're running your own fork or a public-facing version, you **should exclude these files** to protect user privacy and reduce potential repo clutter.
-
-
-## 🧾Logging & Error Handling
+## Logging & Error Handling
 
 PaulBot logs useful information for debugging, monitoring, and post-mortem analysis. Logs are written to a persistent bind-mounted location inside the container (default: `/app/logs/paulbot.log`).
 
-### 📝What Gets Logged
+### What Gets Logged
 
 - Bot startup and shutdown events
 - Commands executed by users
@@ -269,9 +313,11 @@ PaulBot logs useful information for debugging, monitoring, and post-mortem analy
 - Discord API errors (e.g., permission issues)
 - Any uncaught exceptions or fatal crashes
 
-### 🔧Log Location
+### Log Location
 
-The location is configurable using the `LOG_FILE_PATH` environment variable. If not specified, it defaults to:
+Docker's console log rotation defaults to `50m` per file and `3` files, controlled by the host-side `LOG_MAX_SIZE` and `LOG_MAX_FILE` variables when launching the container. These limits apply to Docker's JSON logs, not the application's own log file rotation.
+
+The application log location is configurable using the `LOG_FILE_PATH` environment variable. If not specified, it defaults to:
 `/app/logs/paulbot.log`
 
 This path is bind-mounted from the host machine, typically:
@@ -279,20 +325,20 @@ This path is bind-mounted from the host machine, typically:
 
 Ensure this directory exists on the host and is writable by the container, as shown in the [Installation](#installation) section.
 
-### ❌Fallback Behavior
+### Fallback Behavior
 
 If the log path is invalid or unwritable, the bot falls back to writing logs to `paulbot.log` in the container's current working directory. This fallback is **not persistent** and will be lost when the container is removed.
 
 Tip: Use `docker logs -f paulbot` to tail logs directly if needed.
 
 
-## 👩‍💻Development & Contribution
+## Development & Contribution
 
 PaulBot is a private, personal project — but if you’re a friend, contributor, or curious developer, feel free to poke around.
 
-### 🧱Local Development
+### Local Development
 
-Although the bot is designed to run in Docker, you can run it locally for testing:
+Although the bot is designed to run in Docker, you can run it locally for testing. Use Python 3.11 and install FFmpeg separately if testing voice playback. Use a separate test bot, server and data files when possible; do not run a second instance with production credentials.
 
 1. Clone the repository:
 
@@ -321,7 +367,7 @@ Logs will still be written to the path defined by `LOG_FILE_PATH`, which should 
 
 ---
 
-### 🛠️Contributing Code
+### Contributing Code
 
 PaulBot isn’t intended for public use, but contributions or pull requests from friends are welcome. If you want to add features or improve the codebase:
 
@@ -330,21 +376,59 @@ PaulBot isn’t intended for public use, but contributions or pull requests from
 - Commit your changes with clear messages
 - Push and open a pull request
 
-Note: Don’t commit `.env`, token files, personal data, or secrets. Use `.env.example` as a template instead.
+Note: Don’t commit `.env`, `paulbot.env`, token files, personal data, or secrets. Use `.env.example` as a template instead.
 
 ---
 
-### 🧪Testing
+### Testing
 
-There are no formal tests at the moment. You break it, you fix it. 😎
+There are no formal automated tests at the moment. Use the following checks after dependency or deployment changes:
+
+```bash
+docker ps --filter name=paulbot
+docker exec paulbot python -m pip check
+docker logs --tail 100 paulbot
+```
+
+Verify text commands, quote retrieval, statistics, voice connection, audible TTS playback (including multi-token quotes), voice disconnection and persistent data. The Docker health check is a process check; it does not verify Discord connectivity or audible playback.
+
+When changing deployment scripts, run `bash -n` on both scripts and verify the expected rebuild/recreation behavior. Test invalid-data rejection, failed deployment recovery and concurrent sync handling in an isolated environment, not against live quote and statistics files.
+
+### Dependency Maintenance
+
+Keep exact version pins in `requirements.txt` and review dependencies periodically. Update packaging tools in the Dockerfile, rather than modifying a running container.
+
+After changing dependency pins, build and deploy through the normal synchronization workflow (or build and recreate manually). Verify installed packages and compatibility:
+
+```bash
+docker exec paulbot python -m pip list
+docker exec paulbot python -m pip check
+```
+
+Run a Python package security audit in a temporary container using the newly deployed image. The auditor is installed in an isolated virtual environment so its dependencies do not alter the scanned packages:
+
+```bash
+docker run --rm --entrypoint sh paulbot-image \
+  -c 'python -m venv /tmp/audit &&
+      /tmp/audit/bin/pip install --quiet --no-cache-dir pip-audit &&
+      /tmp/audit/bin/pip-audit --path /usr/local/lib/python3.11/site-packages'
+```
+
+The temporary container is removed on exit. This scans installed Python packages for known vulnerabilities, not system packages or FFmpeg. A successful `pip check` does not imply a clean security audit.
+
+**Maintenance notes (November 25, 2026):**
+
+- `davey==0.1.7` is intentionally pinned because version 0.2.0 caused silent voice playback with `discord.py==2.7.1`. Audible playback was restored and verified after the downgrade. Revisit the pin when a compatible discord.py release is available.
+- The final audit reported two remaining PyNaCl 1.5.0 advisories (`PYSEC-2026-1448` and `PYSEC-2026-3002`), both listing 1.6.2 as the fix. Remediation was deferred because discord.py 2.7.1 requires PyNaCl below 1.6. Do not force an incompatible version. Reassess when upstream compatibility changes.
+- The Dockerfile pins pip 26.3 and setuptools 84.2.1; neither was flagged in the final audit. The temporary audit environment may still display a notice about its own bundled pip version.
 
 
-## 🔐Security Disclaimer
+## Security Disclaimer
 
 PaulBot is built for private use among friends and is not intended for public deployment. That said, there are a few important notes:
 
-- **Never commit sensitive data** such as your real `.env` file, Discord tokens, or GitHub credentials.
-- The included `.env.example` file is safe for sharing and should be used as a template only.
+- **Never commit sensitive data** such as your real `paulbot.env` or `.env` file, Discord tokens, or GitHub credentials.
+- The included `.env.example` file should contain placeholders only. Use a narrowly scoped GitHub token and keep the repository private if it contains private quotes or statistics.
 - If you fork or clone this repository:
   - Replace all identifiers (tokens, guild IDs, channel IDs) with your own.
   - Sanitize `quotes.json` and `stats.json` if you plan to share your forked version publicly.
@@ -354,7 +438,7 @@ PaulBot is built for private use among friends and is not intended for public de
 > ⚠️ **Reminder:** Discord bots run with elevated privileges on your server. Always keep your tokens secret and scope permissions appropriately.
 
 
-## 📜License
+## License
 
 This project is licensed under the **MIT License**.
 

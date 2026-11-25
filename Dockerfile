@@ -12,6 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	procps \
 	&& rm -rf /var/lib/apt/lists/*
 
+# Update Python packaging tools
+RUN python -m pip install --no-cache-dir --upgrade \
+    pip==26.3 setuptools==84.2.1
+
 # Copy the Python dependencies file and install dependencies
 # This layer will be cached unless requirements.txt changes
 COPY requirements.txt .

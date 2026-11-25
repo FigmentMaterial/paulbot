@@ -36,12 +36,12 @@ if [[ ! -f "$ENV_FILE" || ! -r "$ENV_FILE" || ! -s "$ENV_FILE" ]]; then
 fi
 
 # Stop and remove existing container (if any)
-docker rm -f $CONTAINER_NAME 2>/dev/null 2>&1 || true
+docker rm -f "$CONTAINER_NAME" 2>/dev/null 2>&1 || true
 
 # Run the Docker container
 docker run -d \
 	--restart unless-stopped \
-	--name $CONTAINER_NAME \
+	--name "$CONTAINER_NAME" \
 	--log-driver json-file \
 	--log-opt "max-size=${LOG_MAX_SIZE}" \
 	--log-opt "max-file=${LOG_MAX_FILE}" \

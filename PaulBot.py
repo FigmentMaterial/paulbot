@@ -17,56 +17,98 @@ from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
+# Load configuration before initializing logging
+load_dotenv()
+
 # Setup a logging function to process error handling throughout the script
 def setup_logging():
     # Load the desired log file path from environment variables (with a default fallback)
     log_file_path = os.getenv('LOG_FILE_PATH', '/app/logs/paulbot.log')
-    log_level_str = os.getenv('LOG_LEVEL', 'INFO').upper()
-    level = getattr(logging, log_level_str, logging.INFO)
+    log_level_str = os.getenv('LOG_LEVEL', 'WARNING').strip().upper()
 
-    # Ensure the log directory exists, fall back safely if not writable
-    log_dir = os.path.dirname(log_file_path)
-    if log_dir:
-        try:
-            os.makedirs(log_dir, exist_ok=True)
-        except Exception as e:
-            fallback = 'paulbot.log'
-            print(
-                f"[setup_logging] WARNING: could not create '{log_dir}': {e}. "
-                f"Falling back to '{fallback}'",
-                file=sys.stderr
-            )
-            log_file_path = fallback
+    levels = {
+        'DEBUG': logging.DEBUG,
+        'INFO': logging.INFO,
+        'WARNING': logging.WARNING,
+        'ERROR': logging.ERROR,
+        'CRITICAL': logging.CRITICAL,
+    }
 
-    fmt = '%(asctime)s %(levelname)s %(name)s [%(process)d] %(message)s'
-    datefmt = '%Y-%m-%d %H:%M:%S'
-    formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+    invalid_level = log_level_str not in levels
+    level = levels.get(log_level_str, logging.WARNING)
 
-    file_handler = RotatingFileHandler(log_file_path, maxBytes=10_000_000, backupCount=5, encoding='utf-8')
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(level)
+    # Define a consistent log format
+    formatter = logging.Formatter(
+        fmt='%(asctime)s %(levelname)s %(name)s [%(process)d] %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
 
-    stream_handler = logging.StreamHandler(sys.stdout)  # stdout is for visibility in 'docker logs'
+    # Always keep Docker stdout available, even if file logging fails
+    stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(formatter)
     stream_handler.setLevel(level)
+    handlers = [stream_handler]
 
-    # Force reconfigure root logger even if something configured it earlier
-    logging.basicConfig(level=level, handlers=[file_handler, stream_handler], force=True)
+    # Retain rotating file logs; fall back to a local file if necessary
+    file_handler = None
 
-    # Set reasonable defaults for noisy libraries
-    logging.getLogger('discord').setLevel(logging.INFO)
-    logging.getLogger('websockets').setLevel(logging.WARNING)
+    for candidate in dict.fromkeys([log_file_path, 'paulbot.log']):
+        try:
+            log_dir = os.path.dirname(candidate)
 
-    # TEMPORARY: Debugging Discord voice issues
-#    logging.getLogger('discord.voice_client').setLevel(logging.DEBUG)
-#    logging.getLogger('discord.voice_state').setLevel(logging.DEBUG)
-#    logging.getLogger('discord.gateway').setLevel(logging.DEBUG)
+            if log_dir:
+                os.makedirs(log_dir, exist_ok=True)
 
-    logging.getLogger(__name__).info(
-        "Logging initialized level=%s file=%s (stdout + rotating file)",
-        log_level_str, log_file_path
+            file_handler = RotatingFileHandler(
+                candidate,
+                maxBytes=10_000_000,
+                backupCount=5,
+                encoding='utf-8'
+            )
+
+        except (OSError, ValueError) as e:
+            print(
+                f"[setup_logging] WARNING: could not open '{candidate}': {e}",
+                file=sys.stderr
+            )
+
+        else:
+            file_handler.setFormatter(formatter)
+            file_handler.setLevel(level)
+            handlers.append(file_handler)
+            log_file_path = candidate
+            break
+
+    # One logging configuration for PaulBot and its libraries
+    logging.basicConfig(
+        level=level,
+        handlers=handlers,
+        force=True
     )
-    
+
+    logging.getLogger('discord').setLevel(logging.NOTSET)
+    logging.getLogger('websockets').setLevel(logging.NOTSET)
+
+    logger = logging.getLogger(__name__)
+
+    if invalid_level:
+        logger.warning(
+            "Invalid LOG_LEVEL %r; using WARNING.",
+            log_level_str
+        )
+
+    if file_handler is None:
+        print(
+            "[setup_logging] WARNING: file logging unavailable; using stdout only.",
+            file=sys.stderr
+        )
+
+    logger.info(
+        "Logging initialized level=%s file=%s",
+        logging.getLevelName(level),
+        log_file_path if file_handler is not None else 'disabled'
+    )
+
 # Initialize logging
 setup_logging()
 
@@ -111,8 +153,7 @@ def discord_exception_handler(func):
             logging.exception(f"Unexpected error in {func.__name__}: {e}")
     return wrapper
 
-# Load environment variables for Discord token
-load_dotenv()
+# Read Discord configuration from the loaded environment
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_ID = os.getenv('DISCORD_GUILD_ID')
 VOICE_CHANNEL_ID = os.getenv('VOICE_CHANNEL_ID')
@@ -189,9 +230,9 @@ def add_quote(quote):
         quotes.append(quote)
         save_quotes(quotes)
     except AttributeError as e:
-        logging.exception(f"AttributeError: Failed to add quote '{quote}' to '{quotes_file}'. Error: {e}.")
+        logging.exception(f"AttributeError: Failed to add quote '%s'.", quotes_file)
     except Exception as e:
-        logging.exception(f"Unexpected error adding quote '{quote}' to '{quotes_file}'. Error: {e}")
+        logging.exception(f"Unexpected error adding quote to '%s'.", quotes_file)
 
 quotes = load_quotes()  # Load existing quotes from file
 stats = load_stats()    # Load existing stats from file
@@ -235,11 +276,11 @@ async def fetch_message_stats(channel):
                                 stats["quote_reactions"][quote] = {"content": quote, "reactions": reactions_count}
                             save_stats(stats)  # Save updated stats here
                     except KeyError as e:
-                        logging.exception(f"KeyError updating quote_reactions for quote {quote} during !fetch process. Error: {e}")
+                        logging.exception(f"KeyError updating quote_reactions during !fetch process.")
                     except OSError as e:
-                        logging.exception(f"OSError saving stats while tracking reactions for quote {quote} during !fetch process. Error: {e}")
+                        logging.exception(f"OSError saving stats while tracking reactions during !fetch process.")
                     except Exception as e:
-                        logging.exception(f"Unexpected error while tracking reactions for quote {quote} during !fetch process. Error: {e}")
+                        logging.exception(f"Unexpected error while tracking reactions during !fetch process.")
         
     # Set the fetch_completed flag to True after processing
     stats["fetch_completed"] = True
@@ -421,12 +462,12 @@ def convert_tts_to_mp3(quote):
     try:    
         # Tokenize the input text
         tokens = tokenize_text(quote)
-        logging.info(f"Tokenized text into {len(tokens)} parts.")
+        logging.debug("Tokenized text into %d parts.", len(tokens))
         
         # Generate and combine audio for each token
         combined_audio = None
         for idx, token in enumerate(tokens):
-            logging.info(f"Processing token {idx + 1}/{len(tokens)}: {token}")
+            logging.debug("Processing token %d/%d.", idx + 1, len(tokens))
             tts = gTTS(text=token, lang='en')
             temp_file = f'temp_token_{idx}.mp3'
             tts.save(temp_file)
@@ -446,7 +487,7 @@ def convert_tts_to_mp3(quote):
         # Save the combined audio
         if combined_audio:
             combined_audio.export("quote.mp3", format="mp3")
-            logging.info("quote.mp3 was created successfully")
+            logging.debug("quote.mp3 was created successfully")
             return True
         else:
             logging.error("No audio was generated for the quote.")
@@ -551,7 +592,7 @@ async def play_random_quote_once():
             return False
 
         quote = random.choice(filtered_quotes)
-        logging.info("Selected quote to read aloud: %s", quote)
+        logging.debug("Selected quote for playback (%d characters).", len(quote))
 
         success = await async_convert_tts_to_mp3(quote)
         if not success:
@@ -727,9 +768,7 @@ async def reconnect_voice_client():
 # Trigger events based on commands typed in Discord messages
 @bot.event
 @discord_exception_handler
-async def on_message(message):
-    logging.info(f"Received message: '{message.content}' from user: '{message.author}'")
-        
+async def on_message(message):     
     if message.author == bot.user:
         return  #ignore messages that this generates
 
@@ -738,27 +777,29 @@ async def on_message(message):
 
     # Display a test message to make sure the bot and Discord are working together well
     if '!test' in content:
-        logging.info("Test message received.")
+        logging.info("Command received: !test")
         await message.channel.send("Test command received!")
        
     # Add quotes to the repository
     elif content.startswith('!addquote'):
+        logging.info("Command received: !addquote")
         quote = message.content[len('!addquote'):].strip()
         if quote:
             try:
                 add_quote(quote)
                 await message.channel.send('Quote added!')
             except IOError as e:
-                logging.exception(f"IOError while adding quote: {quote}. Error: {e}")
+                logging.exception(f"IOError while adding quote.")
                 await message.channel.send('Failed to add quote due to a file error.')
             except Exception as e:
-                logging.exception(f"Unexpected error while adding quote: {quote}. Error: {e}")
+                logging.exception(f"Unexpected error while adding quote.")
                 await message.channel.send('Failed to add quote due to an unexpected error.')
         else:
             await message.channel.send('Please provide a quote.')
 
     # Generate and send a random quote to the Discord channel
     elif '!paul' in content:
+        logging.info("Command received: !paul")
         user_id = str(message.author.id)
         try:
             stats["paul_commands"][user_id] = stats["paul_commands"].get(user_id, 0) + 1
@@ -781,6 +822,7 @@ async def on_message(message):
             await message.channel.send('No quotes available.')
             
     elif '!stats' in content:
+        logging.info("Command received: !stats")
         try:
             # How many quotes are currently in the quotes.json file
             total_quotes = len(quotes)
@@ -829,6 +871,7 @@ async def on_message(message):
             await message.channel.send('Failed to retrieve stats due to an unexpected error.')
     # Fetch message statistics retroactively
     elif '!fetch' in content:
+        logging.info("Command received: !fetch")
         try:
             await fetch_message_stats(message.channel)
         except Exception as e:
@@ -837,6 +880,7 @@ async def on_message(message):
         
     # Display a list of available commands to the end user in Discord
     elif '!help' in content:
+        logging.info("Command received: !help")
         try:
             # Define the list of available commands and their descriptions
             command_list = [
@@ -930,7 +974,7 @@ async def on_reaction_remove(reaction, user):
 # Run the Discord bot with the loaded token
 if __name__ == "__main__":      # Ensure that bot is being run directly instead of inside another script  
     try:        
-        bot.run(TOKEN)
+        bot.run(TOKEN, log_handler=None)
     except discord.LoginFailure as e:
         logging.exception(f"LoginFailure: Invalid Discord token provided. Error: {e}.")
     except discord.PrivilegedIntentsRequired as e:

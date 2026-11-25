@@ -3,3 +3,6 @@ gTTS==2.5.4
 pydub==0.25.1
 requests==2.34.2
 python-dotenv==1.2.4
+
+# Pin until discord.py supports davey 0.2.x
+davey==0.1.7

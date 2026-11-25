@@ -17,7 +17,7 @@ RUN python -m pip install --no-cache-dir --upgrade \
     pip==26.3 setuptools==84.2.1
 
 # Copy the Python dependencies file and install dependencies
-# This layer will be cached unless requirements.txt changes
+# Reuse the dependency installation layer when requirements and preceding layers are unchanged
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

@@ -1,9 +1,9 @@
 {
     "paul_commands": {
-        "177902880714522624": 847,
+        "177902880714522624": 851,
         "405099653357502466": 90,
         "466034731784601610": 328,
-        "178020850061017088": 656,
+        "178020850061017088": 657,
         "197947126133555200": 52,
         "241811288332828672": 35,
         "300378168970182657": 22,
@@ -477,7 +477,7 @@
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1343016025377214598/Screenshot_20250222_161101_Instagram.jpg?ex=67bbbca4&is=67ba6b24&hm=f6ca24e2c673c687e4e0519e73b64848c1de992929866e63c0684e1318049213&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1343016025377214598/Screenshot_20250222_161101_Instagram.jpg?ex=67bbbca4&is=67ba6b24&hm=f6ca24e2c673c687e4e0519e73b64848c1de992929866e63c0684e1318049213&",
-            "reactions": 3
+            "reactions": 4
         },
         "I have perfected Asian cuisine": {
             "content": "I have perfected Asian cuisine",
@@ -1065,6 +1065,10 @@
         },
         "I.just made a hotdog, but instead of a hot dog. It's just a rib": {
             "content": "I.just made a hotdog, but instead of a hot dog. It's just a rib",
+            "reactions": 1
+        },
+        "https://cdn.discordapp.com/attachments/446214795352342530/1473842384734388346/Screenshot_20260218_164137_Instagram.jpg": {
+            "content": "https://cdn.discordapp.com/attachments/446214795352342530/1473842384734388346/Screenshot_20260218_164137_Instagram.jpg",
             "reactions": 1
         }
     },

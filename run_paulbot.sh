@@ -38,7 +38,7 @@ fi
 # Stop and remove existing container (if any)
 docker rm -f "$CONTAINER_NAME" 2>/dev/null 2>&1 || true
 
-# Run the Docker container
+# Create the container with persistent mounts and log rotation
 docker run -d \
 	--restart unless-stopped \
 	--name "$CONTAINER_NAME" \

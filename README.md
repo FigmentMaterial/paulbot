@@ -24,7 +24,9 @@
   - [Root Directory Layout](#root-directory-layout)
   - [Runtime Files and Version Control](#runtime-files-and-version-control)
 - [Logging & Error Handling](#logging--error-handling)
+  - [Logging Levels](#logging-levels)
   - [What Gets Logged](#what-gets-logged)
+  - [Changing Log Levels](#changing-log-levels)
   - [Log Location](#log-location)
   - [Fallback Behavior](#fallback-behavior)
 - [Development & Contribution](#development--contribution)
@@ -55,7 +57,8 @@
 - **Python:** 3.11 (current Docker runtime; newer Python versions have not been validated)
 - **Docker:** used for deployment
 - **Linux host:** required for the provided deployment scripts
-- **Git, Python 3 and `flock`:** required on the host for automated Git sync
+- **Git:** required to clone the repository and for automated Git sync
+- **Python 3 and `flock`:** required on the host for automated Git sync
 - **Discord bot token, guild ID and voice channel ID:** configure using the [Discord Developer Portal](https://discord.com/developers/applications) and your server
 - **FFmpeg:** installed by the Dockerfile; required separately for local development with voice playback
 
@@ -63,7 +66,7 @@
 
 These instructions assume a Linux host and a deployment account with access to Docker and write access to the repository and persistent files. Run commands as that account unless `sudo` is shown. Do not reinitialize an existing installation.
 
-1. Install Docker using the [official installation guide](https://docs.docker.com/get-docker/). Install Git, Python 3 and `flock` if using automated sync.
+1. Install Docker using the [official installation guide](https://docs.docker.com/get-docker/). Install Git to clone the repository. Install Python 3 and `flock` on the host if using automated sync.
 
 2. For a fresh installation, create the repository directory and clone PaulBot:
 
@@ -183,7 +186,7 @@ cd /etc/paulbot
 | `.dockerignore` | Yes | Yes |
 | `run_paulbot.sh` | No | Yes |
 | `paulbot_sync.sh` | No | No |
-| `quotes.json`, `stats.json`, `README.md` | No | No |
+| `quotes.json`, `stats.json`, `README.md`, `.env.example` | No | No |
 
 Deployment behavior:
 
@@ -230,6 +233,7 @@ These are stored in `/etc/paulbot/paulbot.env`, loaded into the container at run
 | `DISCORD_GUILD_ID`| ✅        | The ID of your Discord server (guild) |
 | `VOICE_CHANNEL_ID`| ✅        | The ID of the voice channel the bot should join |
 | `LOG_FILE_PATH`   | ❌        | Optional custom path for logs inside the container (defaults to `/app/logs/paulbot.log`) |
+| `LOG_LEVEL`       | ❌        | Logging threshold: `DEBUG`, `INFO`, `WARNING`, `ERROR`, or `CRITICAL` (defaults to `WARNING`) |
 | `GITHUB_USERNAME` | ✅*       | Your GitHub username, used by `paulbot_sync.sh` for sync automation |
 | `GITHUB_TOKEN`    | ✅*       | Your GitHub personal access token used for authenticated repo sync |
 
@@ -272,7 +276,7 @@ Some commands (like `!fetch`) may require elevated permissions, including access
 
 ## File Structure
 
-PaulBot's repository is intentionally lightweight. Credentials and logs stay outside version control. In the private PaulBot repository, the JSON data files are intentionally tracked for synchronization.
+PaulBot's repository is intentionally lightweight. Credentials and logs stay outside version control. In the public PaulBot repository, the JSON data files are intentionally tracked for synchronization.
 
 ### Root Directory Layout
 
@@ -298,43 +302,84 @@ The deployment baseline and synchronization lock reside in `.git/`, and applicat
 
 Never commit real credential files (`paulbot.env`, `.env`), tokens or runtime logs. Ensure your `.gitignore` and `.dockerignore` exclude credentials and other sensitive local files.
 
-In this private repository, `quotes.json` and `stats.json` are tracked intentionally so the synchronization script can commit and push updates. If you create a public-facing fork, remove or sanitize existing private data, exclude future private data from version control, and disable or adapt the synchronization script's data-commit logic. Adding an already tracked file to `.gitignore` alone does not remove it from version control or history.
+In this public repository, `quotes.json` and `stats.json` are tracked intentionally so the synchronization script can commit and push updates. Their contents and history are publicly accessible. Do not store sensitive or private information in these files while using this workflow. For a deployment that needs private data, use private storage or a private repository and adapt the synchronization script as needed. Adding an already tracked file to `.gitignore` alone does not remove it from version control or history.
 
 ## Logging & Error Handling
 
-PaulBot logs useful information for debugging, monitoring, and post-mortem analysis. Logs are written to a persistent bind-mounted location inside the container (default: `/app/logs/paulbot.log`).
+PaulBot loads its environment configuration before initializing logging. A shared root logging configuration sends records to Docker's console and a rotating application log file. Discord's additional default handler is disabled to avoid duplicate console entries, and Discord and WebSocket loggers inherit the configured threshold unless a child logger overrides it.
+
+### Logging Levels
+
+Set `LOG_LEVEL` in `/etc/paulbot/paulbot.env` to control the logging threshold. The default is `WARNING`; an invalid value falls back to `WARNING` and produces a configuration warning. Values are case-insensitive.
+
+| Level | Intended use |
+|---|---|
+| `DEBUG` | Temporary detailed troubleshooting, including TTS processing and library diagnostics |
+| `INFO` | Startup, recognized commands, voice connections and playback, plus warnings and errors |
+| `WARNING` | Default production setting; warnings, errors and critical failures |
+| `ERROR` | Errors and critical failures only |
+| `CRITICAL` | Critical failures only |
+
+A healthy bot may produce no console output at `WARNING`. Check container health and Discord functionality rather than treating quiet logs as evidence of failure.
 
 ### What Gets Logged
 
-- Bot startup and shutdown events
-- Commands executed by users
-- Reactions and statistics tracking
-- File I/O issues (missing or corrupt JSON)
-- Discord API errors (e.g., permission issues)
-- Any uncaught exceptions or fatal crashes
+- `INFO`: startup and readiness, recognized command names, voice joins and disconnections, and playback status.
+- `DEBUG`: quote length, token counts, token processing progress, MP3 generation and reconnect backoff details.
+- `WARNING` and above: recoverable problems, configuration issues, connection failures, file I/O errors and application exceptions, as appropriate to severity.
+
+Ordinary Discord messages and the bot's own responses are no longer routinely logged by application code. Command logs record the command name rather than the full message. TTS progress logs omit the actual quote and token text. Exception details and third-party diagnostic logs may still contain sensitive data or message contents, especially at `DEBUG`; this is not comprehensive log sanitization. Review and redact logs before sharing them.
+
+### Changing Log Levels
+
+To temporarily increase verbosity on the Docker host:
+
+```bash
+cd /etc/paulbot
+nano paulbot.env
+```
+
+Set `LOG_LEVEL=INFO` or `LOG_LEVEL=DEBUG`, save the file, and recreate the container:
+
+```bash
+./run_paulbot.sh
+docker logs --tail 100 paulbot
+```
+
+To return to normal operation, set `LOG_LEVEL=WARNING` and run `./run_paulbot.sh` again. Changing `LOG_LEVEL` or `LOG_FILE_PATH` requires a container restart or recreation, not an image rebuild. Recreation is recommended so the current host credential file is mounted even if the editor replaced the file. The Git synchronization script does not automatically redeploy on changes to the untracked `paulbot.env` file.
 
 ### Log Location
 
-Docker's console log rotation defaults to `50m` per file and `3` files, controlled by the host-side `LOG_MAX_SIZE` and `LOG_MAX_FILE` variables when launching the container. These limits apply to Docker's JSON logs, not the application's own log file rotation.
+The two logging destinations have independent rotation policies:
 
-The application log location is configurable using the `LOG_FILE_PATH` environment variable. If not specified, it defaults to:
-`/app/logs/paulbot.log`
+| Destination | Location | Default rotation |
+|---|---|---|
+| Docker console | `docker logs paulbot` | `50m` per file, up to 3 files |
+| Application log | `/app/logs/paulbot.log` in the container; `/var/log/paulbot/paulbot.log` on the host | 10,000,000 bytes per file, 5 backups plus the active file |
 
-This path is bind-mounted from the host machine, typically:
-`/var/log/paulbot/`
+Docker's rotation is controlled by the host-side `LOG_MAX_SIZE` and `LOG_MAX_FILE` variables when launching the container. The application file location is configurable through `LOG_FILE_PATH`; its rotation is configured in `PaulBot.py` using `RotatingFileHandler`.
 
-Ensure this directory exists on the host and is writable by the container, as shown in the [Installation](#installation) section.
+The application log is persistent across container replacements when stored in the mounted `/app/logs` directory. Docker console logs belong to the individual container and are removed when that container is removed. The same application log record appearing once in each destination is intentional.
+
+Ensure the host log directory exists and is writable by the container, as shown in [Installation](#installation).
+
+```bash
+docker logs -f paulbot
+tail -n 30 /var/log/paulbot/paulbot.log
+```
+
+Press Ctrl+C to stop following Docker logs without stopping PaulBot.
 
 ### Fallback Behavior
 
-If the log path is invalid or unwritable, the bot falls back to writing logs to `paulbot.log` in the container's current working directory. This fallback is **not persistent** and will be lost when the container is removed.
+If the configured log file cannot be opened during initialization, PaulBot tries `paulbot.log` in the container's working directory (`/app`). This fallback is not persistent across container replacements. If neither file can be opened, the bot continues with console logging only and emits initialization diagnostics to stderr.
 
-Tip: Use `docker logs -f paulbot` to tail logs directly if needed.
+The fallback is designed for initialization failures; it does not guarantee recovery from later disk or rotation failures. Live log rotation and failure-path testing remain deferred.
 
 
 ## Development & Contribution
 
-PaulBot is a private, personal project — but if you’re a friend, contributor, or curious developer, feel free to poke around.
+PaulBot is a personal project designed for a private Discord server, with source code hosted in a public repository. Friends, contributors and curious developers are welcome to explore the code.
 
 ### Local Development
 
@@ -394,6 +439,8 @@ Verify text commands, quote retrieval, statistics, voice connection, audible TTS
 
 When changing deployment scripts, run `bash -n` on both scripts and verify the expected rebuild/recreation behavior. Test invalid-data rejection, failed deployment recovery and concurrent sync handling in an isolated environment, not against live quote and statistics files.
 
+When changing logging, verify that `WARNING` suppresses routine messages, `INFO` shows startup and command activity without duplicates, and `DEBUG` exposes detailed diagnostics. Confirm ordinary messages are not routinely logged, text commands and audible TTS still work, and new records reach the persistent log. Restore `WARNING` after testing. Test forced log rotation and unwritable-path handling separately from the production bot.
+
 ### Dependency Maintenance
 
 Keep exact version pins in `requirements.txt` and review dependencies periodically. Update packaging tools in the Dockerfile, rather than modifying a running container.
@@ -428,7 +475,7 @@ The temporary container is removed on exit. This scans installed Python packages
 PaulBot is built for private use among friends and is not intended for public deployment. That said, there are a few important notes:
 
 - **Never commit sensitive data** such as your real `paulbot.env` or `.env` file, Discord tokens, or GitHub credentials.
-- The included `.env.example` file should contain placeholders only. Use a narrowly scoped GitHub token and keep the repository private if it contains private quotes or statistics.
+- The included `.env.example` file should contain placeholders only. Use a narrowly scoped GitHub token. This repository is public; use private storage or a private repository if quotes or statistics need to remain private.
 - If you fork or clone this repository:
   - Replace all identifiers (tokens, guild IDs, channel IDs) with your own.
   - Sanitize `quotes.json` and `stats.json` if you plan to share your forked version publicly.

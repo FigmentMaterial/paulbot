@@ -3,7 +3,7 @@
         "177902880714522624": 854,
         "405099653357502466": 90,
         "466034731784601610": 328,
-        "178020850061017088": 658,
+        "178020850061017088": 659,
         "197947126133555200": 52,
         "241811288332828672": 35,
         "300378168970182657": 22,
@@ -1077,6 +1077,10 @@
         },
         "https://tenor.com/view/the-goonies-wiggle-fat-kid-truffle-shuffle-gif-4950425": {
             "content": "https://tenor.com/view/the-goonies-wiggle-fat-kid-truffle-shuffle-gif-4950425",
+            "reactions": 2
+        },
+        "Ewee shes so old lol": {
+            "content": "Ewee shes so old lol",
             "reactions": 2
         }
     },

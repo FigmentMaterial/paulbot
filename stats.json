@@ -1,9 +1,9 @@
 {
     "paul_commands": {
-        "177902880714522624": 854,
-        "405099653357502466": 90,
+        "177902880714522624": 857,
+        "405099653357502466": 96,
         "466034731784601610": 328,
-        "178020850061017088": 659,
+        "178020850061017088": 661,
         "197947126133555200": 52,
         "241811288332828672": 35,
         "300378168970182657": 22,
@@ -565,7 +565,7 @@
         },
         "No": {
             "content": "No",
-            "reactions": 95
+            "reactions": 100
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1251063995859734618/image0.gif?ex=667477e4&is=66732664&hm=d9a2a9b8d75de3261af0692880e58cb77b3a97a1486a854ac26f1f85e82fac29&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1251063995859734618/image0.gif?ex=667477e4&is=66732664&hm=d9a2a9b8d75de3261af0692880e58cb77b3a97a1486a854ac26f1f85e82fac29&",
@@ -1082,6 +1082,18 @@
         "Ewee shes so old lol": {
             "content": "Ewee shes so old lol",
             "reactions": 2
+        },
+        "Looks like being gay was always a choice,  who knew": {
+            "content": "Looks like being gay was always a choice,  who knew",
+            "reactions": 3
+        },
+        "Just work with a hangover pussy": {
+            "content": "Just work with a hangover pussy",
+            "reactions": 2
+        },
+        "I have no interest in that garbage lol": {
+            "content": "I have no interest in that garbage lol",
+            "reactions": 1
         }
     },
     "fetch_completed": true

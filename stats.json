@@ -1,6 +1,6 @@
 {
     "paul_commands": {
-        "177902880714522624": 852,
+        "177902880714522624": 854,
         "405099653357502466": 90,
         "466034731784601610": 328,
         "178020850061017088": 658,
@@ -1074,6 +1074,10 @@
         "https://tenor.com/view/stone-cold-steve-austin-beer-bash-drink-beer-drinking-beer-wwe-gif-16765941": {
             "content": "https://tenor.com/view/stone-cold-steve-austin-beer-bash-drink-beer-drinking-beer-wwe-gif-16765941",
             "reactions": 1
+        },
+        "https://tenor.com/view/the-goonies-wiggle-fat-kid-truffle-shuffle-gif-4950425": {
+            "content": "https://tenor.com/view/the-goonies-wiggle-fat-kid-truffle-shuffle-gif-4950425",
+            "reactions": 2
         }
     },
     "fetch_completed": true

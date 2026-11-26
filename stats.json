@@ -4,7 +4,7 @@
         "405099653357502466": 96,
         "466034731784601610": 328,
         "178020850061017088": 661,
-        "197947126133555200": 52,
+        "197947126133555200": 53,
         "241811288332828672": 35,
         "300378168970182657": 22,
         "417117638569885696": 1,
@@ -565,7 +565,7 @@
         },
         "No": {
             "content": "No",
-            "reactions": 100
+            "reactions": 101
         },
         "https://cdn.discordapp.com/attachments/446214795352342530/1251063995859734618/image0.gif?ex=667477e4&is=66732664&hm=d9a2a9b8d75de3261af0692880e58cb77b3a97a1486a854ac26f1f85e82fac29&": {
             "content": "https://cdn.discordapp.com/attachments/446214795352342530/1251063995859734618/image0.gif?ex=667477e4&is=66732664&hm=d9a2a9b8d75de3261af0692880e58cb77b3a97a1486a854ac26f1f85e82fac29&",
@@ -1093,6 +1093,10 @@
         },
         "I have no interest in that garbage lol": {
             "content": "I have no interest in that garbage lol",
+            "reactions": 1
+        },
+        "I will be busy for the next 40 - 1.5 hours . then I can jam": {
+            "content": "I will be busy for the next 40 - 1.5 hours . then I can jam",
             "reactions": 1
         }
     },
